@@ -1,3 +1,6 @@
+/* eslint-disable react/display-name */
+/* eslint-disable import/no-anonymous-default-export */
+/* eslint-disable @typescript-eslint/await-thenable */
 interface Props {
   params: {
     domain: string

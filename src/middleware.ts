@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { env } from "./env";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "convex/_generated/api";
@@ -38,7 +38,7 @@ export default async function middleware(req: NextRequest) {
     domain: hostname,
   });
 
-  if (!schoolData || !schoolData.domain) {
+  if (!schoolData?.domain) {
     console.log("No school data found return 404 or something");
     return NextResponse.next();
   }
