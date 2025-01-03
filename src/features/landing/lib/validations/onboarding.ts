@@ -12,12 +12,13 @@ export const addressSchema = z.object({
 
 export const schoolSchema = z.object({
   name: z.string().min(2, { message: "Should be more than 2 characters." }),
-  logo: z.string().url(),
+  logo: z.string().url().optional(),
   domain: z
     .string()
     .min(5, { message: "Should not be more than 5 characters." }),
   verified: z.boolean().default(false),
-  registeration_doc: z.string().url(),
+  type: z.enum(siteConfig.schoolTypes),
+  registeration_doc: z.string().url().optional(),
   address: addressSchema,
 });
 

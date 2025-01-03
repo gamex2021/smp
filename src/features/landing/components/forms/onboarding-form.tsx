@@ -25,14 +25,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { siteConfig } from "@/app/config/siteConfig";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-const steps = ["School Information", "Administrator Details", "Confirmation"];
+const steps = ["School Information", "Administrator Details"];
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = React.useState(0);
   const form = useForm<OnboardingSchema>({
     resolver: zodResolver(onboardingSchema),
   });
+  const [logo, setLogo] = React.useState<File | null>(null);
+  const [regDoc, setRegDoc] = React.useState<File | null>(null);
+  function onSubmit(data: OnboardingSchema) {
+    console.log(data);
+  }
 
   function handleNext() {
     setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
@@ -171,15 +177,55 @@ export function OnboardingForm() {
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="school.type"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>School type</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {siteConfig.schoolTypes.map((item) => (
+                  <SelectItem value={item} key={item}>
+                    <span className="capitalize">{item}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <FormItem>
         <FormLabel>School logo</FormLabel>
-        <Input type="file" accept="image/*" multiple={false} />
+        <Input
+          type="file"
+          accept="image/*"
+          multiple={false}
+          onChange={(e) => {
+            const file = e?.target?.files?.[0];
+            setLogo(file ?? null);
+          }}
+        />
       </FormItem>
 
       <FormItem>
         <FormLabel>School registeration document</FormLabel>
-        <Input type="file" accept="application/pdf" multiple={false} />
+        <Input
+          type="file"
+          accept="application/pdf"
+          multiple={false}
+          onChange={(e) => {
+            const file = e?.target?.files?.[0];
+            setRegDoc(file ?? null);
+          }}
+        />
         <FormDescription>
           This could be the school registeration document, certificates of
           proprietorship etc.
@@ -187,6 +233,23 @@ export function OnboardingForm() {
       </FormItem>
 
       {schooladdress}
+      <Button
+        type="button"
+        onClick={() => {
+          if (!logo || !regDoc) {
+            toast.error(
+              "Please upload your school logo or registeration documents.",
+            );
+          }
+          form.trigger(["school"]).then((isValid) => {
+            if (isValid && !!logo && !!regDoc) {
+              handleNext();
+            }
+          });
+        }}
+      >
+        Next
+      </Button>
     </>
   );
 
@@ -245,7 +308,23 @@ export function OnboardingForm() {
           </FormItem>
         )}
       />
-    </div>
+      <div className="flex justify-between">
+        <Button type="button" onClick={handlePrev}>
+          Back
+        </Button>
+        <Button
+          type="submit"
+          onClick={() => {
+            form.trigger(["admin", "school"]).then((isValid) => {
+              if (isValid && currentStep === steps.length - 1) {
+                form.handleSubmit(onSubmit)();
+              }
+            });
+          }}
+        >
+          Submit
+        </Button>
+      </div>    </div>
   );
 
   function renderStep() {
@@ -261,7 +340,10 @@ export function OnboardingForm() {
 
   return (
     <Form {...form}>
-      <form className="grid w-full max-w-2xl grid-cols-1 gap-3">
+      <form
+        onSubmit={() => form.handleSubmit(onSubmit)}
+        className="grid w-full max-w-2xl grid-cols-1 gap-3"
+      >
         <div className="mb-8">
           <div className="flex justify-between">
             {steps.map((step, index) => (
@@ -275,46 +357,14 @@ export function OnboardingForm() {
               </div>
             ))}
           </div>
-          <div className="bg-muted mt-4 h-2 rounded-full">
+          <div className="mt-4 h-2 rounded-full bg-muted">
             <div
-              className="bg-primary h-full rounded-full transition-all duration-300 ease-in-out"
+              className="h-full rounded-full bg-primary transition-all duration-300 ease-in-out"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             ></div>
           </div>
         </div>
         {renderStep()}
-        <div className="flex items-center justify-end gap-2">
-          {currentStep > 0 && (
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => {
-                if (currentStep === 0) {
-                  form.trigger(["school.name", "school.logo", "school.domain",
-                    "school.registeration_doc", "school.address"])
-                }
-                handlePrev();
-              }}
-            >
-              Back{" "}
-            </Button>
-          )}{" "}
-          {currentStep < steps.length && (
-            <Button
-              variant={currentStep === steps.length - 1 ? "default" : "outline"}
-              type="button"
-              onClick={() => {
-                if (currentStep === steps.length - 1) {
-                  alert("form submitted.");
-                  return;
-                }
-                handleNext();
-              }}
-            >
-              {currentStep === steps.length - 1 ? "Submit" : "Next"}
-            </Button>
-          )}
-        </div>
       </form>
     </Form>
   );
