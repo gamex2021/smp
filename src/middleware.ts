@@ -33,15 +33,19 @@ export default async function middleware(req: NextRequest) {
 
     return NextResponse.next();
   }
-
-  const schoolData = await fetchQuery(api.queries.school.findSchool, {
-    domain: hostname,
-  });
-
-  if (!schoolData?.domain) {
-    console.log("No school data found return 404 or something");
-    return NextResponse.next();
-  }
-
-  return NextResponse.rewrite(new URL(`/${schoolData.domain}`, req.url));
+  const searchParams = req.nextUrl.searchParams.toString();
+  // Get the pathname of the request (e.g. /, /about, /blog/first-post)
+  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""
+    }`;
+  //
+  // const schoolData = await fetchQuery(api.queries.school.findSchool, {
+  //   domain: hostname,
+  // });
+  //
+  // if (!schoolData?.domain) {
+  //   console.log("No school data found return 404 or something");
+  //   return NextResponse.next();
+  // }
+  //
+  return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
 }
