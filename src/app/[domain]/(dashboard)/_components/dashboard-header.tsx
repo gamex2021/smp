@@ -22,8 +22,8 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
     return (
         <header className="sticky top-0 z-50 min-h-[75px] w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center gap-4 px-4">
-                <div className="flex flex-1 items-center justify-end gap-4">
+            <div className=" flex h-16 items-center gap-4 px-4">
+                <div className="flex items-center justify-end gap-4 w-full">
                     <Button
                         variant="ghost"
                         size="icon"
@@ -38,7 +38,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="relative h-8 w-8 rounded-full"
+                                className="h-8 w-8 rounded-full flex"
                             >
                                 <Image
                                     src={"/images/emma.png"}
@@ -49,6 +49,12 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                                 />
                             </Button>
                         </DropdownMenuTrigger>
+
+                        {/* the name and role */}
+                        <div className='item-start flex flex-col'>
+                            <h1 className='font-medium text-[14px] text-start leading-[21.84px] text-[#11321F]'>Emmanuel A</h1>
+                            <h1 className="font-medium text-[14px] text-start leading-[21.84px] text-[#11321F99]">Role</h1>
+                        </div>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>
                                 <div className="flex flex-col space-y-1">

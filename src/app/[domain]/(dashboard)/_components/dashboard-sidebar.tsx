@@ -1,6 +1,5 @@
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
-import { BarChart, BookOpen, GraduationCap, Home, LayoutDashboard, LogOut, MessageSquare, School, Settings, Users } from 'lucide-react'
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { mockNavItems } from '@/app/config/siteConfig'
 import { Button } from '@/components/ui/button'
 import {
     Sidebar,
@@ -9,7 +8,10 @@ import {
     SidebarHeader,
     SidebarProvider,
 } from '@/components/ui/sidebar'
-import { mockNavItems } from '@/app/config/siteConfig'
+import { cn } from '@/lib/utils'
+import { BarChart, BookOpen, GraduationCap, Presentation, LogOut, MessageSquare, School, Users, MenuIcon, Rss, Banknote, Settings } from 'lucide-react'
+import { RxDashboard } from "react-icons/rx";
+import Link from 'next/link'
 
 
 interface DashboardSidebarProps {
@@ -22,14 +24,17 @@ interface DashboardSidebarProps {
 }
 
 const icons = {
-    Home,
-    LayoutDashboard,
+    RxDashboard,
+    Presentation,
     BookOpen,
     GraduationCap,
     Users,
     School,
     BarChart,
     MessageSquare,
+    Rss,
+    Banknote,
+    Settings
 }
 
 export function DashboardSidebar({ user, school }: DashboardSidebarProps) {
@@ -39,6 +44,8 @@ export function DashboardSidebar({ user, school }: DashboardSidebarProps) {
                 <SidebarHeader className="border-b px-6">
                     <div className="flex h-[60px] items-center">
                         <span className="text-lg font-bold text-white">{school.name}</span>
+
+                        <MenuIcon className="h-6 w-6 ml-auto cursor-pointer text-white" />
                     </div>
                 </SidebarHeader>
                 <SidebarContent>
