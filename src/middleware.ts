@@ -44,10 +44,18 @@ export default async function middleware(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams.toString();
   // Get the pathname of the request (e.g. /, /about, /blog/first-post)
-  const path = `${url.pathname}${
-    searchParams.length > 0 ? `?${searchParams}` : ""
-  }`;
-
+  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""
+    }`;
+  console.log(path);
+  if (
+    hostname === "localhost:3000"
+    // hostname === env.NEXT_PUBLIC_ROOT_DOMAIN
+  ) {
+    return NextResponse.next();
+    // return NextResponse.rewrite(
+    //   new URL(`/${hostname}${path === "/" ? "" : path}`, req.url),
+    // );
+  }
   // Uncomment and adjust the following block if you need to fetch school data
   // const schoolData = await fetchQuery(api.queries.school.findSchool, {
   //   domain: hostname,
