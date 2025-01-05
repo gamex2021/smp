@@ -1,7 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  ...authTables,
   addresses: defineTable({
     line1: v.string(),
     line2: v.optional(v.string()),
@@ -22,15 +24,17 @@ export default defineSchema({
   }).index("by_domain", ["domain"]),
 
   users: defineTable({
-    firstname: v.string(),
-    lastname: v.string(),
-    email: v.string(),
-    phone: v.string(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
     role: v.union(
       v.literal("ADMIN"),
       v.literal("STUDENT"),
       v.literal("TEACHER"),
       v.literal("ACCOUNTANT"),
     ),
-  }),
+  }).index("by_email", ["email"]),
 });
