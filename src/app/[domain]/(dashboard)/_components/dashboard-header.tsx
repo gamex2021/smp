@@ -1,4 +1,3 @@
-import { Bell, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -8,7 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+import { Bell } from 'lucide-react'
 import Image from 'next/image'
 
 interface DashboardHeaderProps {
@@ -50,6 +49,13 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             </Button>
                         </DropdownMenuTrigger>
 
+                        <Image
+                            src={"/images/emma.png"}
+                            alt={user.name}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                        />
                         {/* the name and role */}
                         <div className='item-start flex flex-col'>
                             <h1 className='font-medium text-[14px] text-start leading-[21.84px] text-[#11321F]'>Emmanuel A</h1>
