@@ -1,19 +1,19 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
+import { getSchoolByDomain } from "./helpers";
 
 export const findSchool = query({
   args: { domain: v.string() },
   handler: async (ctx, args) => {
-    const school = await ctx.db.query("schools").
-      withIndex("by_domain", q => q.eq("domain", args.domain))
-      .first()
+    const school = await getSchoolByDomain(ctx, args.domain);
 
     if (!school) {
       return null;
     }
 
     return {
-      domain: school.domain
-    }
-  }
-})
+      id: school._id,
+      domain: school.domain,
+    };
+  },
+});

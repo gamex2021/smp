@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Icons } from "@/components/icons";
 import { SignInForm } from "../_components/sign-in-form";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: Promise<{ domain: string }>;
@@ -9,6 +12,14 @@ interface Props {
 
 export default async function SignInPage({ params }: Props) {
   const domain = (await params).domain;
+
+  const schoolData = await fetchQuery(api.queries.school.findSchool, {
+    domain,
+  });
+
+  if (!schoolData) {
+    notFound();
+  }
   return (
     <div className="relative grid min-h-screen grid-cols-1 overflow-hidden lg:grid-cols-2">
       <Link
@@ -19,7 +30,7 @@ export default async function SignInPage({ params }: Props) {
         <span>School name</span>
       </Link>
       <main className="absolute left-1/2 top-1/2 z-40 flex w-full -translate-x-1/2 -translate-y-1/2 items-center lg:static lg:left-0 lg:top-0 lg:flex lg:translate-x-0 lg:translate-y-0">
-        <SignInForm domain={domain} />
+        <SignInForm schoolId={schoolData.id} />
       </main>
       <div className="relative aspect-video size-full">
         {/* change this to the one the school set */}

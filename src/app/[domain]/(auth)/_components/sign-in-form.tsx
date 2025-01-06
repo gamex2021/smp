@@ -1,5 +1,8 @@
 "use client";
 
+import { useQuery, useConvex } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+
 import { Icons } from "@/components/icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Id } from "../../../../../convex/_generated/dataModel";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -25,9 +29,10 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 interface Props {
-  domain: string;
+  schoolId: Id<"schools">;
 }
-export function SignInForm({ domain }: Props) {
+export function SignInForm({ schoolId }: Props) {
+  const convex = useConvex();
   const [loading, setLoading] = React.useState(false);
 
   const form = useForm<FormSchema>({
@@ -38,8 +43,22 @@ export function SignInForm({ domain }: Props) {
     },
   });
 
-  function onSubmit(values: FormSchema) {
-    console.log(values);
+  async function onSubmit(values: FormSchema) {
+    setLoading(true);
+    try {
+      const userMatchDomain = await convex.query(
+        api.queries.user.findUserByEmailAndSchoolId,
+        { userEmail: values.email, schoolId: schoolId },
+      );
+      if (userMatchDomain) {
+        console.log(values)
+      }
+    } catch (err) {
+      // handle error properly, show toast or something
+      console.error(err)
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
