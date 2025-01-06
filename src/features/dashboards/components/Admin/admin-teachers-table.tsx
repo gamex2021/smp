@@ -13,7 +13,7 @@ import {
 import Image from 'next/image';
 import { HiDotsVertical } from "react-icons/hi";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { teachers } from '../lib/data';
+import { teachers } from '../../lib/data';
 
 type Props = object
 
