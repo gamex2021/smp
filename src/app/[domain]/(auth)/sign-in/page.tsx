@@ -1,25 +1,29 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Icons } from "@/components/icons";
-import { SignInForm } from "../_components/sign-in-form";
+import { SignInForm } from "../_components/signin-form";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import { notFound } from "next/navigation";
 
-interface Props {
-  params: Promise<{ domain: string }>;
-}
+type Params = Promise<{ [key: string]: string | undefined }>;
 
-export default async function SignInPage({ params }: Props) {
-  const domain = (await params).domain;
+export default async function SignInPage(props: { params: Params }) {
+  const params = await props.params;
+  const domain = params.domain;
+
+  if (!domain) {
+    notFound();
+  }
 
   const schoolData = await fetchQuery(api.queries.school.findSchool, {
     domain,
   });
 
-  if (!schoolData) {
+  if (!schoolData || !schoolData?.verified) {
     notFound();
   }
+
   return (
     <div className="relative grid min-h-screen grid-cols-1 overflow-hidden lg:grid-cols-2">
       <Link

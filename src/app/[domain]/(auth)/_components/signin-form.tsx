@@ -1,8 +1,9 @@
 "use client";
 
-import { useQuery, useConvex } from "convex/react";
+import { useConvex } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 
+import { useAuthActions } from "@convex-dev/auth/react";
 import { Icons } from "@/components/icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import { showErrorToast } from "@/lib/handle-error";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -34,6 +37,7 @@ interface Props {
 export function SignInForm({ schoolId }: Props) {
   const convex = useConvex();
   const [loading, setLoading] = React.useState(false);
+  const { signIn } = useAuthActions();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -50,12 +54,27 @@ export function SignInForm({ schoolId }: Props) {
         api.queries.user.findUserByEmailAndSchoolId,
         { userEmail: values.email, schoolId: schoolId },
       );
-      if (userMatchDomain) {
-        console.log(values)
+
+      if (!userMatchDomain) {
+        toast.error(
+          "Invalid username and password, verify the url and try again.",
+        );
+        return;
       }
+
+      const fd = new FormData();
+      fd.append("email", values.email);
+      console.log(fd);
+      await signIn("resend-otp", fd)
+        .then((res) => {
+          console.log(res);
+          toast.success("Magic link sent to email");
+        })
+        .catch((err) => {
+          showErrorToast(err);
+        });
     } catch (err) {
-      // handle error properly, show toast or something
-      console.error(err)
+      showErrorToast(err);
     } finally {
       setLoading(false);
     }

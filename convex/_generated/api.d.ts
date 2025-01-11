@@ -20,6 +20,7 @@ import type * as mutations_address from "../mutations/address.js";
 import type * as mutations_file from "../mutations/file.js";
 import type * as mutations_school from "../mutations/school.js";
 import type * as mutations_user from "../mutations/user.js";
+import type * as otp_resendOtp from "../otp/resendOtp.js";
 import type * as queries_helpers from "../queries/helpers.js";
 import type * as queries_school from "../queries/school.js";
 import type * as queries_user from "../queries/user.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/file": typeof mutations_file;
   "mutations/school": typeof mutations_school;
   "mutations/user": typeof mutations_user;
+  "otp/resendOtp": typeof otp_resendOtp;
   "queries/helpers": typeof queries_helpers;
   "queries/school": typeof queries_school;
   "queries/user": typeof queries_user;

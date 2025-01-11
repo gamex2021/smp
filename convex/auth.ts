@@ -1,6 +1,12 @@
 import { convexAuth } from "@convex-dev/auth/server";
-import { Password } from "@convex-dev/auth/providers/Password";
+import { ResendOTP } from "./otp/resendOtp";
+import Resend from "@auth/core/providers/resend";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Password],
+  providers: [
+    Resend({
+      from: process.env.EMAIL_SERVER_FROM!,
+    }),
+    ResendOTP,
+  ],
 });

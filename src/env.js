@@ -10,6 +10,11 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "test", "production"]),
     BASE_DOMAIN: z.string().min(3),
     CONVEX_DEPLOYMENT: z.string().min(3),
+    EMAIL_SERVER_USER: z.string().min(3),
+    EMAIL_SERVER_FROM: z.string().min(3),
+    EMAIL_SERVER_PASS: z.string().min(3),
+    EMAIL_SERVER_HOST: z.string().min(3),
+    EMAIL_SERVER_PORT: z.string().min(3),
   },
 
   /**
@@ -31,6 +36,11 @@ export const env = createEnv({
     BASE_DOMAIN: process.env.BASE_DOMAIN,
     NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
     CONVEX_DEPLOYMENT: process.env.CONVEX_DEPLOYMENT,
+    EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
+    EMAIL_SERVER_FROM: process.env.EMAIL_SERVER_FROM,
+    EMAIL_SERVER_PASS: process.env.EMAIL_SERVER_PASS,
+    EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
+    EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

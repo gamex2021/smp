@@ -25,20 +25,22 @@ export default defineSchema({
   }).index("by_domain", ["domain"]),
 
   users: defineTable({
-    name: v.string(),
+    name: v.optional(v.string()),
     image: v.optional(v.string()),
-    email: v.string(),
+    email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
-    phone: v.string(),
+    phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
-    role: v.union(
-      v.literal("ADMIN"),
-      v.literal("STUDENT"),
-      v.literal("TEACHER"),
-      v.literal("ACCOUNTANT"),
+    role: v.optional(
+      v.union(
+        v.literal("ADMIN"),
+        v.literal("STUDENT"),
+        v.literal("TEACHER"),
+        v.literal("ACCOUNTANT"),
+      ),
     ),
-    schoolId: v.id("schools"),
+    schoolId: v.optional(v.id("schools")),
   })
-    .index("by_email", ["email"])
+    .index("email", ["email"])
     .index("by_email_schoolId", ["email", "schoolId"]),
 });

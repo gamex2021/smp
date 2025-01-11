@@ -30,6 +30,7 @@ import { useAction, useMutation } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { showErrorToast } from "@/lib/handle-error";
 import { Icons } from "@/components/icons";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const steps = ["School Information", "Administrator Details"];
 
@@ -65,6 +66,8 @@ export function OnboardingForm() {
     api.actions.register_school.registerSchool,
   );
 
+  const { signIn } = useAuthActions();
+  // TODO: Refactor this function
   async function onSubmit(data: OnboardingSchema) {
     setLoading(true);
     try {
@@ -72,6 +75,12 @@ export function OnboardingForm() {
       if (logo && regDoc) {
         uploadedFiles = await handleUpload([logo, regDoc]);
       }
+      const fd = new FormData();
+      fd.append("name", `${data.admin.firstname} ${data.admin.lastname}`);
+      fd.append("email", data.admin.email);
+      fd.append("phone", data.admin.phone);
+      fd.append("role", "ADMIN" as const);
+
       const formatedData = {
         ...data,
         school: {
