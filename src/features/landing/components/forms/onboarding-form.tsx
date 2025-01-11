@@ -42,9 +42,20 @@ export function OnboardingForm() {
     resolver: zodResolver(onboardingSchema),
   });
 
+  // document states
   const [logo, setLogo] = React.useState<File | null>(null);
   const [regDoc, setRegDoc] = React.useState<File | null>(null);
+  const [createdSchoolId, setCreatedSchoolId] = React.useState<string | null>(
+    null,
+  );
+
+  // convex mutations
   const generateUploadUrl = useMutation(api.mutations.file.generateUploadUrl);
+  const uploadSchoolData = useMutation(api.mutations.school.createSchool);
+  const createAddress = useMutation(api.mutations.address.createAddress);
+
+  // convex auth
+  const { signIn } = useAuthActions();
 
   async function handleUpload(files: File[]) {
     const postUrl = await generateUploadUrl();
@@ -62,11 +73,60 @@ export function OnboardingForm() {
     );
   }
 
+  async function handleCreateSchool() {
+    setLoading(true);
+    try {
+      let uploadedFiles: string[] = [];
+      if (logo && regDoc) {
+        uploadedFiles = await handleUpload([logo, regDoc]);
+      }
+
+      form.trigger(["school"]).then(async (isValid) => {
+        if (isValid && !!uploadedFiles[0] && !!uploadedFiles[1]) {
+          const schoolData = form.getValues("school");
+          const newAddress = await createAddress(schoolData.address);
+          const createdSchool = await uploadSchoolData({
+            ...schoolData,
+            address: newAddress.id,
+            logo: uploadedFiles[0],
+            registeration_doc: uploadedFiles[1],
+          });
+          setCreatedSchoolId(createdSchool.id);
+          handleNext();
+        }
+      });
+    } catch (err) {
+      showErrorToast(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCreateAdminAndConnectSchool() {
+    setLoading(true);
+    try {
+      form.trigger("admin").then((isValid) => {
+        const adminData = form.getValues("admin");
+        if (isValid && createdSchoolId) {
+          const fd = new FormData();
+          fd.append("name", `${adminData.firstname} ${adminData.lastname}`);
+          fd.append("email", adminData.email);
+          fd.append("phone", adminData.phone);
+          fd.append("role", "ADMIN" as const);
+          fd.append("schoolId", createdSchoolId);
+          void signIn("resend-otp", fd);
+        }
+      });
+    } catch (err) {
+      showErrorToast(err);
+    } finally {
+      setLoading(false);
+    }
+  }
   const registerSchoolAction = useAction(
     api.actions.register_school.registerSchool,
   );
 
-  const { signIn } = useAuthActions();
   // TODO: Refactor this function
   async function onSubmit(data: OnboardingSchema) {
     setLoading(true);
@@ -304,19 +364,12 @@ export function OnboardingForm() {
       {schooladdress}
       <Button
         type="button"
-        onClick={() => {
-          if (!logo || !regDoc) {
-            toast.error(
-              "Please upload your school logo or registeration documents.",
-            );
-          }
-          form.trigger(["school"]).then((isValid) => {
-            if (isValid && !!logo && !!regDoc) {
-              handleNext();
-            }
-          });
+        disabled={loading}
+        onClick={async () => {
+          await handleCreateSchool();
         }}
       >
+        {loading && <Icons.spinner className="mr-2 size-5 animate-spin" />}
         Next
       </Button>
     </>
