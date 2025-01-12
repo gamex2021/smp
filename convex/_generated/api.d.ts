@@ -13,7 +13,6 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as actions_register_school from "../actions/register_school.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as mutations_address from "../mutations/address.js";
@@ -36,7 +35,6 @@ import type * as uploads from "../uploads.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "actions/register_school": typeof actions_register_school;
   auth: typeof auth;
   http: typeof http;
   "mutations/address": typeof mutations_address;

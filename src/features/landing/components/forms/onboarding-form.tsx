@@ -26,11 +26,13 @@ import { Input } from "@/components/ui/input";
 import { siteConfig } from "@/app/config/siteConfig";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useAction, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { showErrorToast } from "@/lib/handle-error";
 import { Icons } from "@/components/icons";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { Id } from "../../../../../convex/_generated/dataModel";
+import { useRouter } from "next/navigation";
 
 const steps = ["School Information", "Administrator Details"];
 
@@ -41,18 +43,20 @@ export function OnboardingForm() {
   const form = useForm<OnboardingSchema>({
     resolver: zodResolver(onboardingSchema),
   });
-
+  const router = useRouter();
   // document states
   const [logo, setLogo] = React.useState<File | null>(null);
   const [regDoc, setRegDoc] = React.useState<File | null>(null);
-  const [createdSchoolId, setCreatedSchoolId] = React.useState<string | null>(
-    null,
-  );
+  const [createdSchoolId, setCreatedSchoolId] =
+    React.useState<Id<"schools"> | null>(null);
 
   // convex mutations
   const generateUploadUrl = useMutation(api.mutations.file.generateUploadUrl);
   const uploadSchoolData = useMutation(api.mutations.school.createSchool);
   const createAddress = useMutation(api.mutations.address.createAddress);
+  const completeUserAndSetSchoolOwner = useMutation(
+    api.mutations.user.completeAdminAndSetSchool,
+  );
 
   // convex auth
   const { signIn } = useAuthActions();
@@ -109,12 +113,18 @@ export function OnboardingForm() {
         const adminData = form.getValues("admin");
         if (isValid && createdSchoolId) {
           const fd = new FormData();
-          fd.append("name", `${adminData.firstname} ${adminData.lastname}`);
           fd.append("email", adminData.email);
-          fd.append("phone", adminData.phone);
-          fd.append("role", "ADMIN" as const);
-          fd.append("schoolId", createdSchoolId);
-          void signIn("resend-otp", fd);
+          void signIn("resend-otp", fd).then(async () => {
+            await completeUserAndSetSchoolOwner({
+              name: `${adminData.firstname} ${adminData.lastname}`,
+              email: adminData.email,
+              phone: adminData.phone,
+              schoolId: createdSchoolId,
+              role: "ADMIN" as const,
+            });
+            toast.success("Request submitted 🎉. Check email for next steps.");
+            router.push("/");
+          });
         }
       });
     } catch (err) {
@@ -123,49 +133,8 @@ export function OnboardingForm() {
       setLoading(false);
     }
   }
-  const registerSchoolAction = useAction(
-    api.actions.register_school.registerSchool,
-  );
-
-  // TODO: Refactor this function
   async function onSubmit(data: OnboardingSchema) {
-    setLoading(true);
-    try {
-      let uploadedFiles: string[] = [];
-      if (logo && regDoc) {
-        uploadedFiles = await handleUpload([logo, regDoc]);
-      }
-      const fd = new FormData();
-      fd.append("name", `${data.admin.firstname} ${data.admin.lastname}`);
-      fd.append("email", data.admin.email);
-      fd.append("phone", data.admin.phone);
-      fd.append("role", "ADMIN" as const);
-
-      const formatedData = {
-        ...data,
-        school: {
-          ...data.school,
-          logo: uploadedFiles[0] ?? "",
-          registeration_doc: uploadedFiles[1] ?? "",
-        },
-        admin: {
-          name: `${data.admin.firstname} ${data.admin.lastname}`,
-          email: data.admin.email,
-          phone: data.admin.phone,
-          role: "ADMIN" as const,
-        },
-      };
-
-      await registerSchoolAction(formatedData);
-      form.reset();
-      setLogo(null);
-      setRegDoc(null);
-      toast.success("Request submitted 🎉. Check email for next steps.");
-    } catch (error) {
-      showErrorToast(error);
-    } finally {
-      setLoading(false);
-    }
+    console.log(data);
   }
 
   function handleNext() {
@@ -437,13 +406,9 @@ export function OnboardingForm() {
         <Button
           type="submit"
           disabled={loading}
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault();
-            form.trigger(["admin", "school"]).then((isValid) => {
-              if (isValid && currentStep === steps.length - 1) {
-                form.handleSubmit(onSubmit)();
-              }
-            });
+            await handleCreateAdminAndConnectSchool();
           }}
         >
           {loading && <Icons.spinner className="mr-2 size-5 animate-spin" />}

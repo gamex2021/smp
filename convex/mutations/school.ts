@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation } from "../_generated/server";
+import { mutation } from "../_generated/server";
 import { getSchoolByDomain } from "../queries/helpers";
 
 export const createSchool = mutation({
@@ -31,12 +31,24 @@ export const createSchool = mutation({
   },
 });
 
-export const setSchoolOwner = internalMutation({
+export const setSchoolOwner = mutation({
   args: {
     schoolId: v.id("schools"),
-    userId: v.id("users"),
+    userEmail: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.schoolId, { user: args.userId });
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.userEmail))
+      .first()
+      .then((res) => ({ id: res?._id, role: res?.role }));
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+    if (user.role !== "ADMIN") {
+      throw new ConvexError("Permission denied");
+    }
+    await ctx.db.patch(args.schoolId, { user: user.id });
   },
 });
