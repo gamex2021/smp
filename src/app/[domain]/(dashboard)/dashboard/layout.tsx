@@ -1,15 +1,13 @@
 import { RoleProtected } from "@/components/providers/role-protected";
+import { mockUser } from '@/app/config/siteConfig'
 
-const dummyUser = {
-    role: "admin", //example current role of the user
-};
 export default function DashboardLayout(props: {
     admin: React.ReactNode;
     student: React.ReactNode;
     teacher: React.ReactNode;
     children: React.ReactNode;
 }) {
-    const role = dummyUser.role;
+    const role = mockUser.role;
     return (
         <RoleProtected allowedRoles={["admin", "teacher", "student"]}>
             {role === "admin" && props.admin}

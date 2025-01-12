@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ProfileHeader } from './profile-header'
 import { EditableInput } from './editable-input'
 import { LocationSelect } from './location-select'
+import { mockUser } from '@/app/config/siteConfig'
 
 interface UserSettings {
     firstName: string
@@ -44,7 +45,7 @@ export function SettingsForm() {
             <ProfileHeader
                 name={`${settings.firstName} ${settings.lastName}`}
                 email={settings.email}
-                role="Admin"
+                role={mockUser?.role}
             />
 
             <div className="grid gap-6">
