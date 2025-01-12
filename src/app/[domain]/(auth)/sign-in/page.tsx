@@ -21,7 +21,16 @@ export default async function SignInPage(props: { params: Params }) {
   });
 
   if (!schoolData?.verified) {
-    notFound();
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="mx-auto max-w-sm text-center">
+          <p className="text-xl font-semibold tracking-tight">
+            We verifying your school.
+          </p>
+          <p>We will let you know once the verification process is done.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

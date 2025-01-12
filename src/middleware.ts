@@ -9,7 +9,7 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-const isPublicPage = createRouteMatcher(["/sign-in", "/register", '/']);
+const isPublicPage = createRouteMatcher(["/sign-in", "/register", "/"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   // Redirect user to sign in if route is not public and user is not authenticated
@@ -29,8 +29,9 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     return NextResponse.next();
   }
   const searchParams = url.searchParams.toString();
-  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""
-    }`;
+  const path = `${url.pathname}${
+    searchParams.length > 0 ? `?${searchParams}` : ""
+  }`;
   console.log(path);
   console.log(searchParams);
   if (hostname === "localhost:3000") {
@@ -43,13 +44,13 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   const schoolData = await fetchQuery(api.queries.school.findSchool, {
     domain: hostname,
   });
-
+  console.log(schoolData);
   if (!schoolData?.domain) {
     console.log("No school data found return 404 or something");
     return NextResponse.next();
   }
 
-  return NextResponse.rewrite(new URL(`/${hostname}${path}`, request.url));
+  return NextResponse.rewrite(new URL(`/${hostname}${path}`, request.nextUrl));
 });
 
 export const config = {
