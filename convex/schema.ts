@@ -17,10 +17,11 @@ export default defineSchema({
     domain: v.string(),
     name: v.string(),
     logo: v.string(),
+    type: v.string(),
     verified: v.boolean(),
     registeration_doc: v.string(),
     address: v.id("addresses"),
-    user: v.id("users"),
+    user: v.optional(v.id("users")),
   }).index("by_domain", ["domain"]),
 
   users: defineTable({
@@ -30,11 +31,16 @@ export default defineSchema({
     emailVerificationTime: v.optional(v.number()),
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
-    role: v.union(
-      v.literal("ADMIN"),
-      v.literal("STUDENT"),
-      v.literal("TEACHER"),
-      v.literal("ACCOUNTANT"),
+    role: v.optional(
+      v.union(
+        v.literal("ADMIN"),
+        v.literal("STUDENT"),
+        v.literal("TEACHER"),
+        v.literal("ACCOUNTANT"),
+      ),
     ),
-  }).index("by_email", ["email"]),
+    schoolId: v.optional(v.id("schools")),
+  })
+    .index("email", ["email"])
+    .index("by_email_schoolId", ["email", "schoolId"]),
 });

@@ -26,18 +26,146 @@ import { Input } from "@/components/ui/input";
 import { siteConfig } from "@/app/config/siteConfig";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAction, useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import { showErrorToast } from "@/lib/handle-error";
+import { Icons } from "@/components/icons";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const steps = ["School Information", "Administrator Details"];
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+
   const form = useForm<OnboardingSchema>({
     resolver: zodResolver(onboardingSchema),
   });
+
+  // document states
   const [logo, setLogo] = React.useState<File | null>(null);
   const [regDoc, setRegDoc] = React.useState<File | null>(null);
-  function onSubmit(data: OnboardingSchema) {
-    console.log(data);
+  const [createdSchoolId, setCreatedSchoolId] = React.useState<string | null>(
+    null,
+  );
+
+  // convex mutations
+  const generateUploadUrl = useMutation(api.mutations.file.generateUploadUrl);
+  const uploadSchoolData = useMutation(api.mutations.school.createSchool);
+  const createAddress = useMutation(api.mutations.address.createAddress);
+
+  // convex auth
+  const { signIn } = useAuthActions();
+
+  async function handleUpload(files: File[]) {
+    const postUrl = await generateUploadUrl();
+    return Promise.all(
+      files.map(async (file) => {
+        const result = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file!.type },
+          body: file,
+        });
+
+        const data = await result.json();
+        return data.storageId as unknown as string;
+      }),
+    );
+  }
+
+  async function handleCreateSchool() {
+    setLoading(true);
+    try {
+      let uploadedFiles: string[] = [];
+      if (logo && regDoc) {
+        uploadedFiles = await handleUpload([logo, regDoc]);
+      }
+
+      form.trigger(["school"]).then(async (isValid) => {
+        if (isValid && !!uploadedFiles[0] && !!uploadedFiles[1]) {
+          const schoolData = form.getValues("school");
+          const newAddress = await createAddress(schoolData.address);
+          const createdSchool = await uploadSchoolData({
+            ...schoolData,
+            address: newAddress.id,
+            logo: uploadedFiles[0],
+            registeration_doc: uploadedFiles[1],
+          });
+          setCreatedSchoolId(createdSchool.id);
+          handleNext();
+        }
+      });
+    } catch (err) {
+      showErrorToast(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCreateAdminAndConnectSchool() {
+    setLoading(true);
+    try {
+      form.trigger("admin").then((isValid) => {
+        const adminData = form.getValues("admin");
+        if (isValid && createdSchoolId) {
+          const fd = new FormData();
+          fd.append("name", `${adminData.firstname} ${adminData.lastname}`);
+          fd.append("email", adminData.email);
+          fd.append("phone", adminData.phone);
+          fd.append("role", "ADMIN" as const);
+          fd.append("schoolId", createdSchoolId);
+          void signIn("resend-otp", fd);
+        }
+      });
+    } catch (err) {
+      showErrorToast(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+  const registerSchoolAction = useAction(
+    api.actions.register_school.registerSchool,
+  );
+
+  // TODO: Refactor this function
+  async function onSubmit(data: OnboardingSchema) {
+    setLoading(true);
+    try {
+      let uploadedFiles: string[] = [];
+      if (logo && regDoc) {
+        uploadedFiles = await handleUpload([logo, regDoc]);
+      }
+      const fd = new FormData();
+      fd.append("name", `${data.admin.firstname} ${data.admin.lastname}`);
+      fd.append("email", data.admin.email);
+      fd.append("phone", data.admin.phone);
+      fd.append("role", "ADMIN" as const);
+
+      const formatedData = {
+        ...data,
+        school: {
+          ...data.school,
+          logo: uploadedFiles[0] ?? "",
+          registeration_doc: uploadedFiles[1] ?? "",
+        },
+        admin: {
+          name: `${data.admin.firstname} ${data.admin.lastname}`,
+          email: data.admin.email,
+          phone: data.admin.phone,
+          role: "ADMIN" as const,
+        },
+      };
+
+      await registerSchoolAction(formatedData);
+      form.reset();
+      setLogo(null);
+      setRegDoc(null);
+      toast.success("Request submitted 🎉. Check email for next steps.");
+    } catch (error) {
+      showErrorToast(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleNext() {
@@ -144,6 +272,7 @@ export function OnboardingForm() {
       />
     </div>
   );
+
   const schoolDetails = (
     <>
       <FormField
@@ -235,19 +364,12 @@ export function OnboardingForm() {
       {schooladdress}
       <Button
         type="button"
-        onClick={() => {
-          if (!logo || !regDoc) {
-            toast.error(
-              "Please upload your school logo or registeration documents.",
-            );
-          }
-          form.trigger(["school"]).then((isValid) => {
-            if (isValid && !!logo && !!regDoc) {
-              handleNext();
-            }
-          });
+        disabled={loading}
+        onClick={async () => {
+          await handleCreateSchool();
         }}
       >
+        {loading && <Icons.spinner className="mr-2 size-5 animate-spin" />}
         Next
       </Button>
     </>
@@ -314,7 +436,9 @@ export function OnboardingForm() {
         </Button>
         <Button
           type="submit"
-          onClick={() => {
+          disabled={loading}
+          onClick={(e) => {
+            e.preventDefault();
             form.trigger(["admin", "school"]).then((isValid) => {
               if (isValid && currentStep === steps.length - 1) {
                 form.handleSubmit(onSubmit)();
@@ -322,9 +446,11 @@ export function OnboardingForm() {
             });
           }}
         >
+          {loading && <Icons.spinner className="mr-2 size-5 animate-spin" />}
           Submit
         </Button>
-      </div>    </div>
+      </div>{" "}
+    </div>
   );
 
   function renderStep() {

@@ -13,7 +13,18 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as actions_register_school from "../actions/register_school.js";
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
+import type * as mutations_address from "../mutations/address.js";
+import type * as mutations_file from "../mutations/file.js";
+import type * as mutations_school from "../mutations/school.js";
+import type * as mutations_user from "../mutations/user.js";
+import type * as otp_resendOtp from "../otp/resendOtp.js";
+import type * as queries_helpers from "../queries/helpers.js";
+import type * as queries_matrics from "../queries/matrics.js";
 import type * as queries_school from "../queries/school.js";
+import type * as queries_user from "../queries/user.js";
 import type * as uploads from "../uploads.js";
 
 /**
@@ -25,7 +36,18 @@ import type * as uploads from "../uploads.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "actions/register_school": typeof actions_register_school;
+  auth: typeof auth;
+  http: typeof http;
+  "mutations/address": typeof mutations_address;
+  "mutations/file": typeof mutations_file;
+  "mutations/school": typeof mutations_school;
+  "mutations/user": typeof mutations_user;
+  "otp/resendOtp": typeof otp_resendOtp;
+  "queries/helpers": typeof queries_helpers;
+  "queries/matrics": typeof queries_matrics;
   "queries/school": typeof queries_school;
+  "queries/user": typeof queries_user;
   uploads: typeof uploads;
 }>;
 export declare const api: FilterApi<

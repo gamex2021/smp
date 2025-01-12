@@ -16,7 +16,7 @@ export const schoolSchema = z.object({
   domain: z
     .string()
     .min(5, { message: "Should not be more than 5 characters." }),
-  verified: z.boolean().default(false),
+  // verified: z.boolean().default(false),
   type: z.enum(siteConfig.schoolTypes),
   registeration_doc: z.string().url().optional(),
   address: addressSchema,
@@ -29,7 +29,7 @@ export const adminSchema = z.object({
   lastname: z.string().min(3, { message: "Should be more than 2 characters." }),
   email: z.string().email(),
   phone: z.string().max(11, { message: "Enter a valid phone number" }),
-  is_owner: z.boolean().default(true),
+  // is_owner: z.boolean().default(true),
 });
 
 export const onboardingSchema = z.object({
