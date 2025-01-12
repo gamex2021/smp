@@ -26,7 +26,7 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(2, { message: "Invalid password." }),
+  code: z.string().optional(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -38,18 +38,28 @@ export function SignInForm({ schoolId }: Props) {
   const convex = useConvex();
   const [loading, setLoading] = React.useState(false);
   const { signIn } = useAuthActions();
-
+  const [showCode, setShowCode] = React.useState(false);
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
+      code: "",
     },
   });
 
   async function onSubmit(values: FormSchema) {
     setLoading(true);
     try {
+      if (showCode) {
+        if (!values.code) {
+          toast.error("Enter verification code sent to you email.");
+        }
+        const fd = new FormData();
+        fd.append("code", values.code ?? "");
+        fd.append("email", values.email ?? "");
+        await signIn("resend-otp", fd);
+        return;
+      }
       const userMatchDomain = await convex.query(
         api.queries.user.findUserByEmailAndSchoolId,
         { userEmail: values.email, schoolId: schoolId },
@@ -64,11 +74,11 @@ export function SignInForm({ schoolId }: Props) {
 
       const fd = new FormData();
       fd.append("email", values.email);
-      console.log(fd);
+
       await signIn("resend-otp", fd)
         .then((res) => {
-          console.log(res);
           toast.success("Magic link sent to email");
+          setShowCode(true);
         })
         .catch((err) => {
           showErrorToast(err);
@@ -87,32 +97,36 @@ export function SignInForm({ schoolId }: Props) {
         className="mx-auto grid w-full max-w-lg grid-cols-1 gap-2 rounded-md bg-background p-4"
       >
         <p className="text-xl font-semibold tracking-tight">Welcome back</p>
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email or ID number</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input {...field} type="password" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!showCode && (
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email or ID number</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}{" "}
+        {showCode && (
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Verification code</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Link href="#" className="text-sm text-blue-600">
           Forgot password?
         </Link>
