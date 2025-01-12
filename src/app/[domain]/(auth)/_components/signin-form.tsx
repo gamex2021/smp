@@ -23,6 +23,7 @@ import * as z from "zod";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { showErrorToast } from "@/lib/handle-error";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -35,6 +36,7 @@ interface Props {
   schoolId: Id<"schools">;
 }
 export function SignInForm({ schoolId }: Props) {
+  const router = useRouter();
   const convex = useConvex();
   const [loading, setLoading] = React.useState(false);
   const { signIn } = useAuthActions();
@@ -57,7 +59,10 @@ export function SignInForm({ schoolId }: Props) {
         const fd = new FormData();
         fd.append("code", values.code ?? "");
         fd.append("email", values.email ?? "");
-        await signIn("resend-otp", fd);
+        await signIn("resend-otp", fd).catch((_err) => {
+          toast.error("Invalid verification code.");
+        });
+        router.push("/dashboard");
         return;
       }
       const userMatchDomain = await convex.query(
@@ -76,7 +81,7 @@ export function SignInForm({ schoolId }: Props) {
       fd.append("email", values.email);
 
       await signIn("resend-otp", fd)
-        .then((res) => {
+        .then(() => {
           toast.success("Magic link sent to email");
           setShowCode(true);
         })
