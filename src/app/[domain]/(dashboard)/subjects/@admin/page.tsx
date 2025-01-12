@@ -1,7 +1,7 @@
 import { mockSubjects } from "@/app/config/siteConfig"
 import { AddSubjectCard } from "@/features/subjects/components/Admin/add-subject-card"
 import { SearchHeader } from "@/features/subjects/components/Admin/search-header"
-import { SubjectCard } from "@/features/subjects/components/Admin/subject-card"
+import { SubjectCard } from "@/features/subjects/shared/subject-card"
 
 export default function SubjectsPage() {
 

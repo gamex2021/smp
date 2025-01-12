@@ -1,9 +1,6 @@
+import { mockUser } from '@/app/config/siteConfig';
 import { notFound } from 'next/navigation'
 
-
-const dummyUser = {
-    role: 'admin' //example current role of the user
-}
 
 export function RoleProtected({
     children,
@@ -14,7 +11,7 @@ export function RoleProtected({
 }) {
 
     // check if the allowed roles include the current user role
-    const hasRole = allowedRoles.includes(dummyUser.role)
+    const hasRole = allowedRoles.includes(mockUser.role)
 
     if (!hasRole) {
         notFound()

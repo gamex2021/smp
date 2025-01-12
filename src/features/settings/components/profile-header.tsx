@@ -31,7 +31,7 @@ export function ProfileHeader({ name, email, role }: ProfileHeaderProps) {
 
                 </div>
                 <p className="text-sm text-[#11321F99]">{email}</p>
-                <Badge variant="secondary" className="bg-gray-100 text-[#11321F]">
+                <Badge variant="secondary" className="bg-gray-100 text-[#11321F] capitalize">
                     {role}
                 </Badge>
             </div>

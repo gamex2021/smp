@@ -76,7 +76,7 @@ export const mockNavItems = [
 export const mockUser = {
   id: "1",
   name: "Emmanuel A",
-  role: "admin",
+  role: "teacher",
   avatar: "/placeholder-user.jpg",
 };
 
@@ -97,12 +97,38 @@ export const mockClasses = [
   { id: 5, name: "Class F", teacher: "Mrs Eze Naomi", students: 12 },
 ];
 
+
+export const mockTeacherClasses = [
+  {
+    id: 1,
+    name: "Class A",
+    groups: [
+      { id: 1, name: "Group 1", studentCount: 25 },
+      { id: 2, name: "Group 2", studentCount: 25 },
+      { id: 3, name: "Group 3", studentCount: 25 },
+      { id: 4, name: "Group 4", studentCount: 25 },
+      { id: 5, name: "Group 5", studentCount: 25 },
+    ]
+  },
+  // ... more classes
+]
+
 export const mockSubjects = [
   { id: 1, name: "English" },
   { id: 2, name: "English" },
   { id: 3, name: "English" },
   { id: 4, name: "English" },
   { id: 5, name: "English" },
+];
+
+export const teacherMockSubjects = [
+  { id: 1, name: "English", teacherName: "Mrs Naomi", className: "class 2b" },
+  {
+    id: 2,
+    name: "Mathematics",
+    teacherName: "Mrs Naomi",
+    className: "class 2b",
+  },
 ];
 
 export const mockStudents = [
