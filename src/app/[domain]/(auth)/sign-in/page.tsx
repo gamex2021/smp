@@ -6,7 +6,7 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import { notFound } from "next/navigation";
 
-type Params = Promise<{ [key: string]: string | undefined }>;
+type Params = Promise<Record<string, string | undefined>>;
 
 export default async function SignInPage(props: { params: Params }) {
   const params = await props.params;
@@ -20,7 +20,7 @@ export default async function SignInPage(props: { params: Params }) {
     domain,
   });
 
-  if (!schoolData || !schoolData?.verified) {
+  if (!schoolData?.verified) {
     notFound();
   }
 

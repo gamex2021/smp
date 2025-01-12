@@ -1,5 +1,5 @@
-import { Id } from "../_generated/dataModel";
-import { QueryCtx, MutationCtx } from "../_generated/server";
+import { type Id } from "../_generated/dataModel";
+import { type QueryCtx, type MutationCtx } from "../_generated/server";
 
 export async function getSchoolByDomain(
   ctx: QueryCtx | MutationCtx,
