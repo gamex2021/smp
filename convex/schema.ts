@@ -13,6 +13,17 @@ export default defineSchema({
     country: v.string(),
   }),
 
+  classes: defineTable({
+    title: v.string(),
+    school: v.optional(v.id("schools")),
+  }).index("by_schoolId", ["school"]),
+
+  group: defineTable({
+    title: v.string(),
+    class: v.optional(v.id("classes")),
+    school: v.optional(v.id("schools")),
+  }).index("by_classId", ["class"]),
+
   schools: defineTable({
     domain: v.string(),
     name: v.string(),
