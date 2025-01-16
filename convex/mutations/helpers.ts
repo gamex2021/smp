@@ -1,16 +1,12 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import { type QueryCtx, type MutationCtx } from "../_generated/server";
 
 export async function checkAdmin(ctx: MutationCtx | QueryCtx) {
-  const identity = await ctx.auth.getUserIdentity();
+  const userId = await getAuthUserId(ctx);
 
-  if (identity === null) throw new ConvexError("Unauthorized");
+  if (userId == null) throw new ConvexError("Unauthorized");
 
-  const isAdmin = await ctx.db
-    .query("users")
-    .filter((q) => q.eq(q.field("email"), identity.email ?? ""))
-    .first()
-    .then((res) => res?.role === "ADMIN");
-
+  const isAdmin = await ctx.db.get(userId).then((res) => res?.role === "ADMIN");
   if (!isAdmin) throw new ConvexError("Unauthorized");
 }

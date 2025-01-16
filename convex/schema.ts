@@ -15,7 +15,7 @@ export default defineSchema({
 
   classes: defineTable({
     title: v.string(),
-    school: v.optional(v.id("schools")),
+    school: v.id("schools"),
   }).index("by_schoolId", ["school"]),
 
   group: defineTable({
