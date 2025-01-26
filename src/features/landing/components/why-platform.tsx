@@ -40,7 +40,7 @@ export function WhyPlatform() {
             <Image
               fill
               src="/images/boy-smiling.jpg"
-              className="rounded-lg"
+              className="rounded-lg object-cover object-right"
               alt="hero-image"
             />
           </div>

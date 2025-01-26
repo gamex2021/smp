@@ -46,9 +46,9 @@ export function HowItWorks() {
             <Image
               src={item.image}
               alt={`step-${index + 1}-image`}
-              width={350}
-              height={200}
-              className="rounded-lg"
+              width={500}
+              height={400}
+              className="rounded-lg object-cover object-right"
             />
           </div>
         ))}

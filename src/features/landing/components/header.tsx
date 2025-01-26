@@ -28,7 +28,7 @@ export function Header() {
 
         <div className="flex items-center justify-end text-white">
           <Link
-            href="#"
+            href="/register"
             className="w-fit rounded bg-[#11321F] px-3 py-2 text-sm font-medium"
           >
             Get started

@@ -9,7 +9,7 @@ export default function RegisterPage() {
         <div className="relative rounded-md">
           <Image
             src="/images/boy-smiling.jpg"
-            className="rounded-bl-md rounded-tl-md"
+            className="rounded-bl-md rounded-tl-md object-cover object-right"
             alt="onboarding-image"
             fill
           />
