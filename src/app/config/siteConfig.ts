@@ -76,7 +76,7 @@ export const mockNavItems = [
 export const mockUser = {
   id: "1",
   name: "Emmanuel A",
-  role: "teacher",
+  role: "admin",
   avatar: "/placeholder-user.jpg",
 };
 
