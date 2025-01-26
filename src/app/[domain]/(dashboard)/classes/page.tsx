@@ -28,7 +28,7 @@ export default async function ClassesPage({
   return (
     // only the admin have access to the classes route
     <RoleProtected allowedRoles={["admin"]}>
-      <div className="mx-auto max-w-6xl p-6">
+      <div className="mx-auto max-w-[1600px] p-6">
         <SearchHeader
           title={classes?.find((item) => item._id === sParams.class)?.title}
         />

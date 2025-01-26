@@ -85,7 +85,7 @@ export function AddClassForm() {
         try {
             await createClassAction({
                 title: data.title,
-                school: schoolInfo.id,
+                schoolId: schoolInfo.id,
             });
             toast.success("Class created.");
             form.reset()

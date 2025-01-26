@@ -13,7 +13,7 @@ export const getClassesData = query({
 
     const classes = await ctx.db
       .query("classes")
-      .filter((q) => q.eq(q.field("school"), school._id))
+      .filter((q) => q.eq(q.field("schoolId"), school._id))
       .collect();
 
     return classes;

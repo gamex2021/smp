@@ -5,7 +5,7 @@ import { checkAdmin } from "./helpers";
 export const createClass = mutation({
   args: {
     title: v.string(),
-    school: v.id("schools"),
+    schoolId: v.id("schools"),
   },
 
   handler: async (ctx, args) => {

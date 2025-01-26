@@ -20,6 +20,7 @@ import type * as mutations_class from "../mutations/class.js";
 import type * as mutations_file from "../mutations/file.js";
 import type * as mutations_helpers from "../mutations/helpers.js";
 import type * as mutations_school from "../mutations/school.js";
+import type * as mutations_subject from "../mutations/subject.js";
 import type * as mutations_user from "../mutations/user.js";
 import type * as otp_resendOtp from "../otp/resendOtp.js";
 import type * as queries_class from "../queries/class.js";
@@ -27,6 +28,7 @@ import type * as queries_group from "../queries/group.js";
 import type * as queries_helpers from "../queries/helpers.js";
 import type * as queries_matrics from "../queries/matrics.js";
 import type * as queries_school from "../queries/school.js";
+import type * as queries_subject from "../queries/subject.js";
 import type * as queries_user from "../queries/user.js";
 import type * as uploads from "../uploads.js";
 
@@ -46,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/file": typeof mutations_file;
   "mutations/helpers": typeof mutations_helpers;
   "mutations/school": typeof mutations_school;
+  "mutations/subject": typeof mutations_subject;
   "mutations/user": typeof mutations_user;
   "otp/resendOtp": typeof otp_resendOtp;
   "queries/class": typeof queries_class;
@@ -53,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "queries/helpers": typeof queries_helpers;
   "queries/matrics": typeof queries_matrics;
   "queries/school": typeof queries_school;
+  "queries/subject": typeof queries_subject;
   "queries/user": typeof queries_user;
   uploads: typeof uploads;
 }>;
