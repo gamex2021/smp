@@ -97,7 +97,6 @@ export const mockClasses = [
   { id: 5, name: "Class F", teacher: "Mrs Eze Naomi", students: 12 },
 ];
 
-
 export const mockTeacherClasses = [
   {
     id: 1,
@@ -108,10 +107,10 @@ export const mockTeacherClasses = [
       { id: 3, name: "Group 3", studentCount: 25 },
       { id: 4, name: "Group 4", studentCount: 25 },
       { id: 5, name: "Group 5", studentCount: 25 },
-    ]
+    ],
   },
   // ... more classes
-]
+];
 
 export const mockSubjects = [
   { id: 1, name: "English" },
