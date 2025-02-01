@@ -15,7 +15,8 @@ export function Hero() {
       <div>
         <Image
           src="/images/boy-smiling.jpg"
-          fill
+          width={900}
+          height={900}
           alt="hero-image"
           className="w-full aspect-square object-right rounded-md object-cover"
         />

@@ -107,28 +107,18 @@ export default defineSchema({
     .index("by_class", ["classId"])
     .index("by_class_student", ["classId", "studentId"]),
 
-  // Subject Categories table: Organizes subjects into categories
-  subjectCategories: defineTable({
-    name: v.string(),
-    description: v.string(),
-    schoolId: v.id("schools"),
-    order: v.number(), // For custom ordering of categories
-  }).index("by_school", ["schoolId"]),
-
   // Subjects table: Stores information about individual subjects
   subjects: defineTable({
     name: v.string(),
     originalName: v.string(), // Store the original predefined name
     description: v.string(),
-    categoryId: v.id("subjectCategories"),
+    category: v.string(),
     schoolId: v.id("schools"),
     isCore: v.boolean(),
     isActive: v.boolean(), // Schools can deactivate subjects
     // customFields can be added here for school-specific customizations
   })
     .index("by_school", ["schoolId"])
-    .index("by_category", ["categoryId"])
-    .index("by_school_and_category", ["schoolId", "categoryId"])
     .index("by_school_and_name", ["schoolId", "name"]),
 
   // SubjectTeachers junction table: Links subjects to teachers and classes

@@ -6,18 +6,12 @@ export const createSubject = mutation({
   args: {
     name: v.string(),
     description: v.string(),
-    categoryId: v.id("subjectCategories"),
+    category: v.string(),
     schoolId: v.id("schools"),
     classes: v.optional(v.array(v.id("classes"))),
     isCore: v.boolean(),
   },
   handler: async (ctx, args) => {
-    // Verify the category belongs to the school
-    const category = await ctx.db.get(args.categoryId);
-    if (!category || category.schoolId !== args.schoolId) {
-      throw new Error("Invalid category");
-    }
-
     // check if the name exist, subject names must be unique
     const findSubject = await ctx.db
       .query("subjects")
@@ -32,7 +26,7 @@ export const createSubject = mutation({
       name: args.name,
       originalName: args.name, // Same as name for custom subjects
       description: args.description,
-      categoryId: args.categoryId,
+      category: args.category,
       schoolId: args.schoolId,
       isCore: args.isCore,
       isActive: true,
