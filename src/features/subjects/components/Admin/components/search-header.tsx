@@ -10,27 +10,45 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-
-
+import { AddSubjectCard } from './add-subject-card'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 export function SearchHeader() {
 
-    const handleAddSubject = () => {
-        console.log('Add new subject')
-        // Add new subject logic here
-    }
 
     return (
         <div className="flex flex-col space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold">All Subjects</h1>
                 <div className="flex items-center gap-4">
-                    <Button
-                        onClick={handleAddSubject}
-                        className="bg-[#2E8B57] text-white hover:bg-[#2E8B57]/90"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Subject
-                    </Button>
+                    {/* add a subject via the header */}
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button
+                                className="bg-[#2E8B57] text-white hover:bg-[#2E8B57]/90"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Subject
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add a subject</DialogTitle>
+                                <DialogDescription>
+                                    Create a subject.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <AddSubjectCard />
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* query via the query header */}
                     <Select defaultValue="every">
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select subject" />
