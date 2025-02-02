@@ -19,3 +19,5 @@ export const getClassesData = query({
     return classes;
   },
 });
+
+

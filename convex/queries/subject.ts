@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { getSchoolByDomain } from "./helpers";
 
 // Get all subjects for a school
 export const getSchoolSubjects = query({
@@ -17,6 +18,39 @@ export const getSchoolSubjects = query({
     return {
       subjects,
     };
+  },
+});
+
+// get class subject and class relations, which is essentially just getting the class, subject and teacher relation
+export const getSTC = query({
+  args: {
+    domain: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const school = await getSchoolByDomain(ctx, args.domain);
+
+    if (!school) {
+      return null;
+    }
+    //  verify the classId belongs to the school
+    const subjectClasses = await ctx.db
+      .query("subjectTeachers")
+      .withIndex("by_school", (q) => q.eq("schoolId", school._id))
+      .collect();
+
+    const subjects = await Promise.all(
+      subjectClasses?.map(async (subject) => {
+        const currentSubject = await ctx.db.get(subject?.subjectId);
+        const currentClass = await ctx.db.get(subject.classId);
+
+        return {
+          currentClass,
+          currentSubject,
+        };
+      }),
+    );
+
+    return subjects;
   },
 });
 

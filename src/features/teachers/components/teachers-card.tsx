@@ -6,16 +6,10 @@ import {
     CardContent,
     CardHeader,
 } from "@/components/ui/card"
+import { Teacher } from '../types'
 
 interface TeacherCardProps {
-    teacher: {
-        id: number
-        name: string
-        class: string
-        subject: string
-        email: string
-        avatar: string
-    }
+    teacher: Teacher
 }
 
 export function TeacherCard({ teacher }: TeacherCardProps) {
@@ -26,8 +20,8 @@ export function TeacherCard({ teacher }: TeacherCardProps) {
                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
                         <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white">
                             <Image
-                                src={teacher.avatar}
-                                alt={teacher.name}
+                                src={teacher.image ?? ""}
+                                alt={teacher?.name ?? "Teacher"}
                                 width={80}
                                 height={80}
                                 className="object-cover"
@@ -39,16 +33,16 @@ export function TeacherCard({ teacher }: TeacherCardProps) {
             <CardContent className="pt-12 pb-4">
                 <div className="text-center space-y-1">
                     <h3 className="font-semibold">{teacher.name}</h3>
-                    <p className="text-sm text-gray-500">{teacher.subject} Teacher</p>
+                    <p className="text-sm text-gray-500">{teacher?.assignedClasses?.map(classes => classes?.title).join(', ').slice(1)} Teacher</p>
                 </div>
                 <div className="mt-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <GraduationCap className="h-4 w-4" />
-                        Class {teacher.class}
+                        Class {teacher?.assignedClasses?.map(classes => classes?.title).join(', ').slice(1)}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <BookOpen className="h-4 w-4" />
-                        {teacher.subject}
+                        {teacher?.subjects?.map(subject => subject?.name).join(', ')}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Mail className="h-4 w-4" />

@@ -3,11 +3,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
+import { type Teacher } from '../types'
 import { TeacherCard } from './teachers-card'
 import { TeachersPagination } from './teachers-pagination'
 
 interface TeachersGridProps {
-    teachers: any[]
+    teachers: Teacher[]
     currentPage: number
     onPageChange: (page: number) => void
 }
@@ -26,7 +27,7 @@ export function TeachersGrid({
         <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {currentTeachers.map((teacher) => (
-                    <TeacherCard key={teacher.id} teacher={teacher} />
+                    <TeacherCard key={teacher._id} teacher={teacher} />
                 ))}
             </div>
             <div className="flex justify-center">

@@ -104,12 +104,13 @@ export function AddSubjectCard() {
     });
 
 
+    // create the subject function
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setLoader(true);
         if (!schoolInfo?.id) {
             toast.error("Could not get school info.");
             return;
         }
+        setLoader(true);
         try {
             await createSubject({
                 name: values.name,

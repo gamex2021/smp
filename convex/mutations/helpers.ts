@@ -10,3 +10,5 @@ export async function checkAdmin(ctx: MutationCtx | QueryCtx) {
   const isAdmin = await ctx.db.get(userId).then((res) => res?.role === "ADMIN");
   if (!isAdmin) throw new ConvexError("Unauthorized");
 }
+
+

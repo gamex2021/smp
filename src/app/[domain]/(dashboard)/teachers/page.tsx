@@ -13,7 +13,7 @@ export default function TeachersPage() {
         <RoleProtected allowedRoles={['admin']}>
             <div className="p-6 max-w-[1600px] mx-auto">
                 <Suspense fallback={<TableSkeleton />}>
-                    <TeachersContent initialTeachers={mockTeachers} />
+                    <TeachersContent />
                 </Suspense>
             </div>
         </RoleProtected>

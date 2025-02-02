@@ -8,8 +8,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { Search, UserPlus } from 'lucide-react';
 import { ViewToggle } from './view-toggle';
+import { useState } from "react";
+import CreateTeacherForm from "./create-teacher";
 
 
 interface TeachersHeaderProps {
@@ -19,6 +29,8 @@ interface TeachersHeaderProps {
 }
 
 export function TeachersHeader({ view, onViewChange, onSearch }: TeachersHeaderProps) {
+    const [isTeacherCreateFormOpen, setIsTeacherCreateFormOpen] = useState(false)
+
     return (
         <div className="flex flex-col space-y-6 mb-6">
             <div className="flex justify-between items-center">
@@ -48,8 +60,24 @@ export function TeachersHeader({ view, onViewChange, onSearch }: TeachersHeaderP
                         onChange={(e) => onSearch(e.target.value)}
                     />
                 </div>
+
+                {/* when this icon is clicked, the teacher's create form modal will be opened */}
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                    <UserPlus className="h-7 w-7 text-[#123b24]" />
+                    <Dialog open={isTeacherCreateFormOpen} onOpenChange={setIsTeacherCreateFormOpen}>
+                        <DialogTrigger asChild>
+                            <UserPlus className="h-7 w-7 cursor-pointer hover:scale-105 text-[#123b24]" />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="text-[#11321f]">Add New Teacher</DialogTitle>
+                                <DialogDescription>
+                                    Fill in the teacher&apos;s information below. They will receive an email with their login credentials.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <CreateTeacherForm onClose={() => setIsTeacherCreateFormOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
+
                 </div>
             </div>
         </div>

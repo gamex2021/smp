@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["images.unsplash.com"], // Add any other image domains as needed
+    domains: ["images.unsplash.com", "optimistic-owl-188.convex.cloud"], // Add any other image domains as needed
   },
 };
 

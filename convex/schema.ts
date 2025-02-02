@@ -21,18 +21,19 @@ export default defineSchema({
         v.literal("ADMIN"),
         v.literal("STUDENT"),
         v.literal("TEACHER"),
-        v.literal("ACCOUNTANT"),
+        // v.literal("ACCOUNTANT"),  //edited this out , because the admin is essentially also an accountant, right bro?
       ),
     ),
     schoolId: v.optional(v.id("schools")),
     schoolName: v.optional(v.string()),
+    username: v.optional(v.string()),
     phone: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
     phoneVerificationTime: v.optional(v.number()),
     qualifications: v.optional(v.string()),
     gender: v.optional(v.string()),
     bio: v.optional(v.string()),
-    changedPassword: v.optional(v.boolean()),
+    changedPassword: v.optional(v.boolean()), // this field is only specific to the teacher and student role, and will only be changed once. the default should be false. when they log in and it is false, then they are being forced to change their passwords, we can use middleware for this
     // Student-specific fields
     currentClass: v.optional(v.id("classes")),
     guardianName: v.optional(v.string()),
