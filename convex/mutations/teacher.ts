@@ -5,6 +5,9 @@ import bcrypt from "bcryptjs";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action, internalMutation } from "../_generated/server";
+import { Resend as ResendAPI } from "resend";
+
+const resend_api = process.env.AUTH_RESEND_KEY;
 
 // Function to generate random password
 function generatePassword() {
@@ -143,6 +146,24 @@ export const createTeacher = action({
     /*    then find a way to send the user, and the password to the teacher, also we will need a functionality so that as soon as they log in the first time
      we will essentially force them to change their password. 
      */
+    try {
+      const resend = new ResendAPI(resend_api);
+      const { error } = await resend.emails.send({
+        from: process.env.EMAIL_SERVER_FROM!,
+        to: [args.email],
+        subject: `Your Credentials`,
+        text: `Find attached your password to sign into your school portal, you will be prompted to change your password immediately after authorization, Password : ${password} `,
+      });
+
+      if (error) {
+        console.error(
+          "An error occured while sending the credentials :",
+          error,
+        );
+      }
+    } catch (error) {
+      console.error("This is the error", error);
+    }
 
     return { success: true };
   },
