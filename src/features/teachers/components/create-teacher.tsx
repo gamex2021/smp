@@ -297,7 +297,7 @@ function CreateTeacherForm({ onClose }: { onClose: () => void }) {
                     name="bio"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Bio</FormLabel>Textarea
+                            <FormLabel>Bio</FormLabel>
                             <FormControl>
                                 <Textarea
                                     placeholder="Tell us about the teacher's experience and expertise..."

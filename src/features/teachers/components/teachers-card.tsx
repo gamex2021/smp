@@ -33,12 +33,12 @@ export function TeacherCard({ teacher }: TeacherCardProps) {
             <CardContent className="pt-12 pb-4">
                 <div className="text-center space-y-1">
                     <h3 className="font-semibold">{teacher.name}</h3>
-                    <p className="text-sm text-gray-500">{teacher?.assignedClasses?.map(classes => classes?.title).join(', ').slice(1)} Teacher</p>
+                    <p className="text-sm text-gray-500">{teacher?.assignedClasses?.map(classes => classes?.title).join(', ')} Teacher</p>
                 </div>
                 <div className="mt-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <GraduationCap className="h-4 w-4" />
-                        Class {teacher?.assignedClasses?.map(classes => classes?.title).join(', ').slice(1)}
+                        Class {teacher?.assignedClasses?.map(classes => classes?.title).join(', ')}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <BookOpen className="h-4 w-4" />

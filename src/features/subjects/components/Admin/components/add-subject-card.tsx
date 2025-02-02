@@ -134,21 +134,6 @@ export function AddSubjectCard() {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* the name of the subject */}
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Subject Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. Advanced Mathematics" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
                 {/* the category of the subject */}
                 <FormField
                     control={form.control}
@@ -174,6 +159,22 @@ export function AddSubjectCard() {
                         </FormItem>
                     )}
                 />
+
+                {/* the name of the subject */}
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Subject Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g. Advanced Mathematics" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
 
                 {/* the description of the subject */}
                 <FormField
