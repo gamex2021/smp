@@ -1,10 +1,14 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { MoreVertical, Plus } from 'lucide-react'
 import Image from 'next/image'
+import AssignSubjectToTeacher from "../components/Admin/components/assign-subject-to-teacher"
+import { type Id } from "~/_generated/dataModel"
 
 interface BaseSubjectCardProps {
+    id: Id<"subjects">
     name: string
     onClick?: () => void
     onAssign?: () => void
@@ -27,6 +31,7 @@ interface NonTeacherProps {
 type SubjectCardProps = BaseSubjectCardProps & (TeacherProps | NonTeacherProps)
 
 export function SubjectCard({
+    id,
     name,
     onClick,
     onAssign,
@@ -57,19 +62,30 @@ export function SubjectCard({
                             </div>
                         </div>
                     ) : (
-                        <Button
-                            size="default"
-                            className="w-full bg-white hover:bg-white/90 text-[#11321F] font-medium rounded-xl"
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onAssign?.()
-                            }}
-                        >
-                            Assign
-                            <div className='px-1 py-1 rounded-md bg-[#2E8B57]'>
-                                <Plus className="h-4 w-4 text-white" />
-                            </div>
-                        </Button>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button
+                                    size="default"
+                                    className="w-full bg-white hover:bg-white/90 text-[#11321F] font-medium rounded-xl"
+                                >
+                                    Assign
+                                    <div className='px-1 py-1 rounded-md bg-[#2E8B57]'>
+                                        <Plus className="h-4 w-4 text-white" />
+                                    </div>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Assign subject</DialogTitle>
+                                    <DialogDescription>
+                                        Assign the subject to a teacher
+                                    </DialogDescription>
+                                </DialogHeader>
+                                {/* this is the component that assigns the subject to a teacher , so they are assigning the teacher to a subject in the class, so we will be using the subjectTeachers schema here which joins the teacher, subject and also the class */}
+                                <AssignSubjectToTeacher subjectId={id} />
+                            </DialogContent>
+                        </Dialog>
+
                     )
                 }
             </div>

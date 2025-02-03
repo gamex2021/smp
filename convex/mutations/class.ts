@@ -23,6 +23,6 @@ export const createGroup = mutation({
 
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
-    await ctx.db.insert("group", args);
+    await ctx.db.insert("groups", args);
   },
 });

@@ -70,6 +70,8 @@ const AdminSubjects = (props: Props) => {
 
     const { subjects, continueCursor } = subjectsQuery;
 
+    console.log("these are the subjects", subjects)
+
 
     return (
         <div className="p-6 space-y-6">
@@ -78,7 +80,7 @@ const AdminSubjects = (props: Props) => {
                 {/* the list of subjects for the school */}
                 {
                     subjects?.map((subject) => (
-                        <SubjectCard key={subject?._id} name={subject?.name} />
+                        <SubjectCard key={subject?._id} id={subject._id} name={subject?.name} />
                     ))
                 }
 

@@ -91,3 +91,32 @@ export const createSTC = internalMutation({
     });
   },
 });
+
+// assign a teacher to a subject in the class
+export const UpdateSubjectClassTeachers = mutation({
+  args: {
+    teacherId: v.id("users"),
+    classId: v.id("classes"),
+    subjectId: v.id("subjects"),
+  },
+  handler: async (ctx, args) => {
+    const { teacherId, subjectId, classId } = args;
+
+    // Check if the relationship already exists
+    const existingRelation = await ctx.db
+      .query("subjectTeachers")
+      .withIndex("by_subject_and_class", (q) =>
+        q.eq("subjectId", subjectId).eq("classId", classId),
+      )
+      .first();
+
+    if (!existingRelation) {
+      return null;
+    }
+
+    // Create new relationship
+    return await ctx.db.patch(existingRelation._id, {
+      teacherId,
+    });
+  },
+});

@@ -17,21 +17,21 @@ export const getTeachersWithPagination = query({
 
     if (!school) throw new ConvexError("School not found.");
 
-    let query = ctx.db
+    const query = ctx.db
       .query("users")
       .withIndex("by_school", (q) =>
         q.eq("schoolId", school._id).eq("role", "TEACHER"),
-      );
-
-    if (args.search) {
-      query = query.filter((q) =>
-        q.or(
-          q.eq(q.field("name"), args.search),
-          q.eq(q.field("email"), args.search!),
-        ),
-      );
-    }
-
+      )
+      .filter((q) => {
+        if (args.search) {
+          console.log("here", args.search);
+          return q.or(
+            q.eq(q.field("name"), args.search),
+            q.eq(q.field("email"), args.search),
+          );
+        }
+        return q.eq(q.field("_id"), q.field("_id")); // This is always true, effectively no filter when no search
+      });
     // Get paginated results
     const teachers = await query
       .order("desc")
@@ -60,8 +60,11 @@ export const getTeachersWithPagination = query({
         );
 
         // resolve class details before returning
+
         const resolvedClasses = await Promise.all(
-          classes.map((sub) => ctx.db.get(sub.classId)),
+          classes
+            .map((sub) => (sub.classId ? ctx.db.get(sub.classId) : undefined))
+            .filter(Boolean),
         );
 
         return {

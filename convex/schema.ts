@@ -88,7 +88,7 @@ export default defineSchema({
 
   // ClassTeacher junction table: Links teachers to their assigned classes
   classTeacher: defineTable({
-    classId: v.id("classes"),
+    classId: v.optional(v.id("classes")),
     teacherId: v.id("users"),
     schoolId: v.id("schools"),
   })
@@ -202,7 +202,7 @@ export default defineSchema({
   }).index("by_school_id", ["schoolId"]),
 
   // Groups table: Represents various groups within a school or class
-  group: defineTable({
+  groups: defineTable({
     title: v.string(),
     class: v.optional(v.id("classes")),
     school: v.optional(v.id("schools")),

@@ -21,7 +21,7 @@ export const getSchoolSubjects = query({
   },
 });
 
-// get class subject and class relations, which is essentially just getting the class, subject and teacher relation
+// get class, subject and teachers relations, which is essentially just getting the class, subject and teacher relation
 export const getSTC = query({
   args: {
     domain: v.string(),
@@ -46,6 +46,45 @@ export const getSTC = query({
         return {
           currentClass,
           currentSubject,
+        };
+      }),
+    );
+
+    return subjects;
+  },
+});
+
+// get the class, subject and teachers relation via the subjectId
+export const getSTCBySubjectId = query({
+  args: {
+    subjectId: v.id("subjects"),
+    domain: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // this domain is essentially just for safety in this function, is the domain is not found then the subjectteachers schema cannot be queried
+    const school = await getSchoolByDomain(ctx, args.domain);
+
+    if (!school) {
+      return null;
+    }
+
+    //  verify the classId belongs to the school
+    const subjectClasses = await ctx.db
+      .query("subjectTeachers")
+      .withIndex("by_subject", (q) => q.eq("subjectId", args.subjectId))
+      .collect();
+
+    const subjects = await Promise.all(
+      subjectClasses?.map(async (subject) => {
+        const currentSubject = await ctx.db.get(subject?.subjectId);
+        const currentClass = await ctx.db.get(subject.classId);
+        const currentTeacher = subject.teacherId
+          ? await ctx.db.get(subject.teacherId)
+          : null;
+        return {
+          currentClass,
+          currentSubject,
+          currentTeacher,
         };
       }),
     );

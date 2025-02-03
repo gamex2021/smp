@@ -13,7 +13,7 @@ export const getClassGroupsData = query({
     if (!school) throw new ConvexError("School not found.");
 
     const groups = await ctx.db
-      .query("group")
+      .query("groups")
       .filter((q) =>
         q.and(
           q.eq(q.field("school"), school._id),

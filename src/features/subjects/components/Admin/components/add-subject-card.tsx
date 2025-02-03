@@ -238,7 +238,7 @@ export function AddSubjectCard() {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full bg-green-800">
                     {
                         loader ? (<TbLoader3 className="text-white w-7 h-7 animate-spin" />) : "Add Subject"
                     }

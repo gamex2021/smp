@@ -3,15 +3,19 @@ import { type Id } from "~/_generated/dataModel";
 export interface Teacher {
   _id: Id<"users">;
   name?: string;
-  assignedClasses: ({
-    _id: Id<"classes">;
-    _creationTime: number;
-    description?: string;
-    isActive?: boolean;
-    capacity?: number;
-    schoolId: Id<"schools">;
-    title: string;
-  } | null)[];
+  assignedClasses: (
+    | {
+        _id: Id<"classes">;
+        _creationTime: number;
+        description?: string;
+        isActive?: boolean;
+        capacity?: number;
+        schoolId: Id<"schools">;
+        title: string;
+      }
+    | null
+    | undefined
+  )[];
   subjects: ({
     _id: Id<"subjects">;
     _creationTime: number;
