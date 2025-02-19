@@ -8,7 +8,7 @@ type Props = object
 
 const AttendancePage = (props: Props) => {
     return (
-        <RoleProtected allowedRoles={['admin', 'teacher']}>
+        <RoleProtected allowedRoles={['ADMIN', 'TEACHER']}>
             <div className='max-w-[1600px] mx-auto'>
                 <AttendanceHeader />
 

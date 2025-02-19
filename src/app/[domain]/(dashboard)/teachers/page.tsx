@@ -10,7 +10,7 @@ export default function TeachersPage() {
 
     return (
         // only the admin have access to the teachers route
-        <RoleProtected allowedRoles={['admin']}>
+        <RoleProtected allowedRoles={['ADMIN']}>
             <div className="p-6 max-w-[1600px] mx-auto">
                 <Suspense fallback={<TableSkeleton />}>
                     <TeachersContent />

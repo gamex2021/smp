@@ -1,5 +1,8 @@
+"use client";
 import { RoleProtected } from "@/components/providers/role-protected";
 import { mockUser } from '@/app/config/siteConfig'
+import { useQuery } from "convex/react";
+import { api } from "~/_generated/api";
 
 export default function DashboardLayout(props: {
     admin: React.ReactNode;
@@ -7,12 +10,13 @@ export default function DashboardLayout(props: {
     teacher: React.ReactNode;
     children: React.ReactNode;
 }) {
-    const role = mockUser.role;
+    // GET THE USER USING THE QUERY CONVEX OPTION
+    const user = useQuery(api.queries.user.currentUser);
     return (
-        <RoleProtected allowedRoles={["admin", "teacher", "student"]}>
-            {role === "admin" && props.admin}
-            {role === "student" && props.student}
-            {role === "teacher" && props.teacher}
+        <RoleProtected allowedRoles={["ADMIN", "TEACHER", "STUDENT"]}>
+            {user?.role === "ADMIN" && props.admin}
+            {user?.role === "STUDENT" && props.student}
+            {user?.role === "TEACHER" && props.teacher}
         </RoleProtected>
     );
 }

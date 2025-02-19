@@ -21,6 +21,7 @@ import { useAction, useMutation, useQuery } from "convex/react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { TbLoader3 } from "react-icons/tb"
+import { useAuthActions } from "@convex-dev/auth/react";
 import { toast } from "sonner"
 import * as z from "zod"
 import { api } from "~/_generated/api"
@@ -91,6 +92,8 @@ function CreateTeacherForm({ onClose }: { onClose: () => void }) {
     const classesQuery = useQuery(api.queries.class.getClassesData, {
         domain,
     });
+    // convex auth
+    const { signIn } = useAuthActions();
 
 
     // create the teacher function
@@ -120,11 +123,18 @@ function CreateTeacherForm({ onClose }: { onClose: () => void }) {
         }
 
         try {
-            // create the teacher here
-            await createTeacher({
-                ...newValues,
-                schoolId: schoolInfo?.id,
-            })
+            // add the teacher profile to convex
+            const fd = new FormData();
+            fd.append("email", newValues.email);
+
+            void signIn("resend-otp", fd).then(async () => {
+                // create the teacher here
+                await createTeacher({
+                    ...newValues,
+                    schoolId: schoolInfo?.id,
+                })
+            });
+
             toast.success("Successfully Created Teacher, email and password sent")
             setLoader(false);
             onClose()

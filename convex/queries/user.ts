@@ -1,5 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { getSchoolById, getUserByEmailAndSchoolId } from "./helpers";
 
 export const findUserByEmailAndSchoolId = query({
@@ -16,5 +17,17 @@ export const findUserByEmailAndSchoolId = query({
       id: data._id,
       name: data.name,
     };
+  },
+});
+
+export const currentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+    return await ctx.db.get(userId);
   },
 });

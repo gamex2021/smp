@@ -14,15 +14,10 @@ import { BarChart, BookOpen, GraduationCap, Presentation, LogOut, MessageSquare,
 import { RxDashboard } from "react-icons/rx"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useQuery } from 'convex/react'
+import { api } from '~/_generated/api'
 
-interface DashboardSidebarProps {
-    user: {
-        role: string
-    }
-    school: {
-        name: string
-    }
-}
+
 
 const icons = {
     RxDashboard,
@@ -38,15 +33,20 @@ const icons = {
     Settings
 }
 
-export function DashboardSidebar({ user, school }: DashboardSidebarProps) {
+export function DashboardSidebar() {
     const pathname = usePathname()
+    // GET THE USER USING THE QUERY CONVEX OPTION
+    const user = useQuery(api.queries.user.currentUser);
+
+
+    // console.log("this is the user", user)
 
     return (
         <SidebarProvider className='w-fit' defaultOpen>
             <Sidebar>
                 <SidebarHeader className="border-b px-6">
                     <div className="flex h-[60px] items-center">
-                        <span className="text-lg font-bold text-white">{school.name}</span>
+                        <span className="text-lg font-bold text-white">{user?.schoolName ?? "TSX"}</span>
                         <MenuIcon className="h-6 w-6 ml-auto cursor-pointer text-white" />
                     </div>
                 </SidebarHeader>
@@ -56,7 +56,7 @@ export function DashboardSidebar({ user, school }: DashboardSidebarProps) {
                             const Icon = icons[item.icon as keyof typeof icons]
                             const isActive = pathname === item.href
 
-                            return item.roles.includes(user.role) ? (
+                            return user?.role && item.roles.includes(user.role) ? (
                                 <Link
                                     key={item.href}
                                     href={item.href}

@@ -1,3 +1,4 @@
+"use client";
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -7,18 +8,17 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useQuery } from 'convex/react';
 import { Bell } from 'lucide-react'
 import Image from 'next/image'
+import { api } from '~/_generated/api';
 
-interface DashboardHeaderProps {
-    user: {
-        name: string
-        role: string
-        avatar: string
-    }
-}
 
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+
+export function DashboardHeader() {
+    // GET THE USER USING THE QUERY CONVEX OPTION
+    const user = useQuery(api.queries.user.currentUser);
+
     return (
         <header className="sticky top-0 z-50 min-h-[75px] w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className=" flex h-16 items-center gap-4 px-4">
@@ -41,7 +41,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             >
                                 <Image
                                     src={"/images/emma.png"}
-                                    alt={user.name}
+                                    alt={user?.name ?? 'User'}
                                     width={32}
                                     height={32}
                                     className="rounded-full"
@@ -49,24 +49,24 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             </Button>
                         </DropdownMenuTrigger>
 
-                        <Image
+                        {/* <Image
                             src={"/images/emma.png"}
-                            alt={user.name}
+                            alt={user?.name ?? 'User'}
                             width={32}
                             height={32}
                             className="rounded-full"
-                        />
+                        /> */}
                         {/* the name and role */}
                         <div className='item-start flex flex-col'>
-                            <h1 className='font-medium text-[14px] text-start leading-[21.84px] text-[#11321F]'>Emmanuel A</h1>
-                            <h1 className="font-medium text-[14px] text-start leading-[21.84px] text-[#11321F99]">Role</h1>
+                            <h1 className='font-medium text-[14px] text-start leading-[21.84px] text-[#11321F]'>{user?.name}</h1>
+                            <h1 className="font-medium text-[14px] text-start leading-[21.84px] text-[#11321F99]">{user?.role}</h1>
                         </div>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>
                                 <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                                    <p className="text-sm font-medium leading-none">{user?.name}</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        {user.role}
+                                        {user?.role}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>

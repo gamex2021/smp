@@ -52,7 +52,7 @@ export const getSTC = query({
 
     return subjects;
   },
-});
+}); 
 
 // get the class, subject and teachers relation via the subjectId
 export const getSTCBySubjectId = query({
@@ -61,7 +61,7 @@ export const getSTCBySubjectId = query({
     domain: v.string(),
   },
   handler: async (ctx, args) => {
-    // this domain is essentially just for safety in this function, is the domain is not found then the subjectteachers schema cannot be queried
+    // this domain is essentially just for safety in this function, if the domain is not found then the subjectteachers schema cannot be queried
     const school = await getSchoolByDomain(ctx, args.domain);
 
     if (!school) {

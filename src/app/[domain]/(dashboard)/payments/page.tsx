@@ -12,7 +12,7 @@ type Props = object
 const page = (props: Props) => {
     return (
         // only the admin can access the payment page
-        <RoleProtected allowedRoles={['admin']}>
+        <RoleProtected allowedRoles={['ADMIN']}>
             <div className="p-6 max-w-[1600px] mx-auto space-y-8">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold text-gray-900">Payment</h1>

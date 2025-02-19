@@ -79,22 +79,23 @@ export const createEntity = internalMutation({
     dob: v.optional(v.string()), // Date of birth
   },
   handler: async (ctx, args) => {
-    const username = generateUsername(args.name);
-
-    const existingUser = await ctx.db
+    const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
-      .first();
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first()
+      .then((res) => ({ id: res?._id }));
 
-    if (existingUser) {
-      throw new ConvexError("User already exists");
+    if (!user || !user.id) {
+      throw new ConvexError("User not found");
     }
 
-    return await ctx.db.insert("users", {
+    const username = generateUsername(args.name);
+
+    await ctx.db.patch(user.id, {
       ...args,
       username,
     });
-
-   
+    await ctx.db.patch(args.schoolId, { user: user.id });
+    return user.id;
   },
 });

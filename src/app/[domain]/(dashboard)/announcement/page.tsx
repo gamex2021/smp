@@ -7,7 +7,7 @@ type Props = object
 
 const page = (props: Props) => {
     return (
-        <RoleProtected allowedRoles={['admin', 'teacher', 'student']}>
+        <RoleProtected allowedRoles={['ADMIN', 'TEACHER', 'STUDENT']}>
             <div className="p-6 max-w-[1600px] mx-auto space-y-8">
                 <Suspense >
                     <AnnouncementContent

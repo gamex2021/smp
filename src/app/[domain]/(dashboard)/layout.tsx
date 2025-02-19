@@ -1,10 +1,9 @@
+import { DomainProvider } from "@/context/DomainContext"
+import Chatbot from "@/features/chatbot/chatbot"
+import type React from "react"; // Added import for React
 import { Suspense } from "react"
-import { mockSchool, mockUser } from "@/app/config/siteConfig"
 import { DashboardHeader } from "./_components/dashboard-header"
 import { DashboardSidebar } from "./_components/dashboard-sidebar"
-import Chatbot from "@/features/chatbot/chatbot"
-import type React from "react" // Added import for React
-import { DomainProvider } from "@/context/DomainContext"
 
 
 type Params = Promise<{ domain: string }>;
@@ -21,9 +20,9 @@ export default async function DashboardLayout({
     return (
         <DomainProvider domain={domain}>
             <div className="flex min-h-screen bg-background">
-                <DashboardSidebar user={mockUser} school={mockSchool} />
+                <DashboardSidebar />
                 <div className="flex-1 ">
-                    <DashboardHeader user={mockUser} />
+                    <DashboardHeader />
                     <main className="flex-1 space-y-4">
                         <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
 

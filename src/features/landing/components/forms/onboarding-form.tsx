@@ -133,6 +133,7 @@ export function OnboardingForm() {
       setLoading(false);
     }
   }
+  
   async function onSubmit(data: OnboardingSchema) {
     console.log(data);
   }

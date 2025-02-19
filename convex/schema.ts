@@ -42,7 +42,8 @@ export default defineSchema({
     dob: v.optional(v.string()),
     // Teacher-specific fields can be added here in the future
   })
-    .index("by_email", ["email"])
+    .index("email", ["email"])
+    .index("phone", ["phone"])
     .index("by_school", ["schoolId", "role"])
     .index("by_class", ["currentClass"])
     .index("by_email_schoolId", ["email", "schoolId"]),
