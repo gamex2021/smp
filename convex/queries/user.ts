@@ -1,7 +1,7 @@
-import { query } from "../_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { getSchoolById, getUserByEmailAndSchoolId } from "./helpers";
+import { v } from "convex/values";
+import { internalQuery, query } from "../_generated/server";
+import { getUserByEmailAndSchoolId } from "./helpers";
 
 export const findUserByEmailAndSchoolId = query({
   args: { schoolId: v.id("schools"), userEmail: v.string() },
@@ -29,5 +29,12 @@ export const currentUser = query({
       return null;
     }
     return await ctx.db.get(userId);
+  },
+});
+
+export const getUser = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
   },
 });

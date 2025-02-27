@@ -1,50 +1,79 @@
-import { mockTransactions } from '@/app/config/siteConfig'
-import { RoleProtected } from '@/components/providers/role-protected'
-import { Button } from '@/components/ui/button'
-import { MetricCards } from '@/features/payments/components/metric-cards'
-import { RevenueChart } from '@/features/payments/components/revenue-chart'
-import { TransactionTable } from '@/features/payments/components/transaction-table'
-import { Plus } from 'lucide-react'
-import React, { Suspense } from 'react'
+"use client"
+import { Suspense } from "react"
+import { RoleProtected } from "@/components/providers/role-protected"
+import { PaymentForm } from "@/features/payments/components/payment-form"
+import { OutstandingPayments } from "@/features/payments/components/outstanding-payments"
+import { PaymentAnalytics } from "@/features/payments/components/payment-analytics"
+import { useDomain } from "@/context/DomainContext"
+import { useQuery } from "convex/react"
+import { api } from "~/_generated/api"
+import { PaymentMetrics } from "@/features/payments/components/payment-metrics"
+import { TransactionTable } from "@/features/payments/components/transaction-table"
+import { PaymentSearch } from "@/features/payments/components/payment-search"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-type Props = object
+export default function PaymentsPage() {
+    const { domain } = useDomain()
+    // get the schoolInfo which includes the id,
+    const school = useQuery(api.queries.school.findSchool, {
+        domain,
+    })
 
-const page = (props: Props) => {
+    if (!school?.id) {
+        return null
+    }
+
     return (
-        // only the admin can access the payment page
-        <RoleProtected allowedRoles={['ADMIN']}>
-            <div className="p-6 max-w-[1600px] mx-auto space-y-8">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold text-gray-900">Payment</h1>
-                    <Button className="bg-[#B4D5C3] hover:bg-[#B4D5C3]/90 text-[#11321FCC]">
-                        Add new payment
-                        <div className='bg-white mr-2 px-1 py-1 rounded-sm'>
-                            <Plus className=" h-2 w-2 text-[#1F5F3B]" />
+        <RoleProtected allowedRoles={["ADMIN"]}>
+            <div className="min-h-screen bg-gray-50/30">
+                <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
+                            <p className="text-sm text-gray-500">Manage student payments and fees</p>
                         </div>
-
-                    </Button>
-                </div>
-
-                <Suspense fallback={<div>Loading metrics...</div>}>
-                    <MetricCards />
-                </Suspense>
-
-                <div className="grid gap-8">
-                    <div className="rounded-lg border bg-white p-6">
-                        <Suspense fallback={<div>Loading chart...</div>}>
-                            <RevenueChart />
-                        </Suspense>
+                        <PaymentForm schoolId={school.id} />
                     </div>
 
-                    <div className="rounded-lg border bg-white">
-                        <Suspense fallback={<div>Loading transactions...</div>}>
-                            <TransactionTable initialData={mockTransactions} />
-                        </Suspense>
-                    </div>
+                    <Suspense fallback={<div>Loading payment metrics...</div>}>
+                        <PaymentMetrics schoolId={school.id} />
+                    </Suspense>
+
+                    <Tabs defaultValue="analytics" className="w-full">
+                        <TabsList className="mb-4">
+                            <TabsTrigger value="analytics">Payment Analytics</TabsTrigger>
+                            <TabsTrigger value="transactions">Transaction Table</TabsTrigger>
+                            <TabsTrigger value="outstanding">Outstanding Payments</TabsTrigger>
+                            <TabsTrigger value="search">Payment Search</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="transactions" className="mt-0">
+                            <Suspense fallback={<div>Loading Transaction table...</div>}>
+                                <TransactionTable schoolId={school.id} />
+                            </Suspense>
+                        </TabsContent>
+
+                        <TabsContent value="outstanding" className="mt-0">
+                            <Suspense fallback={<div>Loading outstanding payments...</div>}>
+                                <OutstandingPayments schoolId={school.id} />
+                            </Suspense>
+                        </TabsContent>
+
+                        <TabsContent value="search" className="mt-0">
+                            <Suspense fallback={<div>Loading payment search...</div>}>
+                                <PaymentSearch schoolId={school.id} />
+                            </Suspense>
+                        </TabsContent>
+
+                        <TabsContent value="analytics" className="mt-0">
+                            <Suspense fallback={<div>Loading analytics...</div>}>
+                                <PaymentAnalytics schoolId={school.id} />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </RoleProtected>
     )
 }
 
-export default page

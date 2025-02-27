@@ -13,31 +13,23 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { StudentsPagination } from './students-pagination'
+import { Student } from '../../types'
 
 
 
-interface Student {
-    id: number
-    name: string
-    class: string
-    group: string
-    gender: string
-    phone: string
-    email: string
-    avatar: string
-}
+
 
 interface StudentsTableProps {
-    initialStudents: Student[]
+    students: Student[]
 }
 
-export function StudentsTable({ initialStudents }: StudentsTableProps) {
+export function StudentsTable({ students }: StudentsTableProps) {
     const [page, setPage] = useState(1)
     const [studentsPerPage] = useState(6)
 
     const indexOfLastStudent = page * studentsPerPage
     const indexOfFirstStudent = indexOfLastStudent - studentsPerPage
-    const currentStudents = initialStudents.slice(indexOfFirstStudent, indexOfLastStudent)
+    const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent)
 
     return (
         <div className="bg-white rounded-lg border shadow-sm">
@@ -47,7 +39,6 @@ export function StudentsTable({ initialStudents }: StudentsTableProps) {
                         <TableHead className="w-12"></TableHead>
                         <TableHead className='text-[#11321F]'>Name</TableHead>
                         <TableHead className='text-[#11321F]'>Class</TableHead>
-                        <TableHead className='text-[#11321F]'>Group</TableHead>
                         <TableHead className='text-[#11321F]'>Gender</TableHead>
                         <TableHead className='text-[#11321F]'>Phone number</TableHead>
                         <TableHead className='text-[#11321F]'>Email</TableHead>
@@ -56,14 +47,14 @@ export function StudentsTable({ initialStudents }: StudentsTableProps) {
                 </TableHeader>
                 <TableBody>
                     {currentStudents.map((student, index) => (
-                        <TableRow key={student.id}>
+                        <TableRow key={student._id}>
                             <TableCell>{indexOfFirstStudent + index + 1}</TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
                                         <Image
-                                            src={student.avatar}
-                                            alt={student.name}
+                                            src={student.image ?? '/images/default-avatar.png'}
+                                            alt={student.name ?? ""}
                                             width={32}
                                             height={32}
                                             className="object-cover"
@@ -72,8 +63,7 @@ export function StudentsTable({ initialStudents }: StudentsTableProps) {
                                     {student.name}
                                 </div>
                             </TableCell>
-                            <TableCell>{student.class}</TableCell>
-                            <TableCell>{student.group}</TableCell>
+                            <TableCell>{student.currentClass?.title}</TableCell>
                             <TableCell>{student.gender}</TableCell>
                             <TableCell>{student.phone}</TableCell>
                             <TableCell>{student.email}</TableCell>
@@ -94,7 +84,7 @@ export function StudentsTable({ initialStudents }: StudentsTableProps) {
             <div className="py-4 px-6 border-t">
                 <StudentsPagination
                     currentPage={page}
-                    totalPages={Math.ceil(initialStudents.length / studentsPerPage)}
+                    totalPages={Math.ceil(students.length / studentsPerPage)}
                     onPageChange={setPage}
                 />
             </div>

@@ -13,25 +13,37 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as actions_notifications from "../actions/notifications.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
+import type * as lib_utils from "../lib/utils.js";
+import type * as mutations_academic from "../mutations/academic.js";
 import type * as mutations_address from "../mutations/address.js";
 import type * as mutations_class from "../mutations/class.js";
+import type * as mutations_fees from "../mutations/fees.js";
 import type * as mutations_file from "../mutations/file.js";
 import type * as mutations_helpers from "../mutations/helpers.js";
+import type * as mutations_notifications from "../mutations/notifications.js";
+import type * as mutations_payment from "../mutations/payment.js";
 import type * as mutations_school from "../mutations/school.js";
+import type * as mutations_student from "../mutations/student.js";
 import type * as mutations_subject from "../mutations/subject.js";
 import type * as mutations_teacher from "../mutations/teacher.js";
 import type * as mutations_user from "../mutations/user.js";
 import type * as otp_resendOtp from "../otp/resendOtp.js";
+import type * as queries_academic from "../queries/academic.js";
 import type * as queries_class from "../queries/class.js";
+import type * as queries_fees from "../queries/fees.js";
 import type * as queries_group from "../queries/group.js";
 import type * as queries_helpers from "../queries/helpers.js";
 import type * as queries_matrics from "../queries/matrics.js";
+import type * as queries_payment from "../queries/payment.js";
 import type * as queries_school from "../queries/school.js";
+import type * as queries_student from "../queries/student.js";
 import type * as queries_subject from "../queries/subject.js";
 import type * as queries_teacher from "../queries/teacher.js";
 import type * as queries_user from "../queries/user.js";
+import type * as schedulers_academic from "../schedulers/academic.js";
 import type * as uploads from "../uploads.js";
 
 /**
@@ -43,25 +55,37 @@ import type * as uploads from "../uploads.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "actions/notifications": typeof actions_notifications;
   auth: typeof auth;
   http: typeof http;
+  "lib/utils": typeof lib_utils;
+  "mutations/academic": typeof mutations_academic;
   "mutations/address": typeof mutations_address;
   "mutations/class": typeof mutations_class;
+  "mutations/fees": typeof mutations_fees;
   "mutations/file": typeof mutations_file;
   "mutations/helpers": typeof mutations_helpers;
+  "mutations/notifications": typeof mutations_notifications;
+  "mutations/payment": typeof mutations_payment;
   "mutations/school": typeof mutations_school;
+  "mutations/student": typeof mutations_student;
   "mutations/subject": typeof mutations_subject;
   "mutations/teacher": typeof mutations_teacher;
   "mutations/user": typeof mutations_user;
   "otp/resendOtp": typeof otp_resendOtp;
+  "queries/academic": typeof queries_academic;
   "queries/class": typeof queries_class;
+  "queries/fees": typeof queries_fees;
   "queries/group": typeof queries_group;
   "queries/helpers": typeof queries_helpers;
   "queries/matrics": typeof queries_matrics;
+  "queries/payment": typeof queries_payment;
   "queries/school": typeof queries_school;
+  "queries/student": typeof queries_student;
   "queries/subject": typeof queries_subject;
   "queries/teacher": typeof queries_teacher;
   "queries/user": typeof queries_user;
+  "schedulers/academic": typeof schedulers_academic;
   uploads: typeof uploads;
 }>;
 export declare const api: FilterApi<

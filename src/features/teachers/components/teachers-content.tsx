@@ -80,7 +80,7 @@ export function TeachersContent() {
     const { teachers } = teachersquery;
 
 
-    console.log("this is the teachers currently", teachers)
+    // console.log("this is the teachers currently", teachers)
     return (
         <>
             <TeachersHeader

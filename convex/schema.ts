@@ -57,7 +57,12 @@ export default defineSchema({
     name: v.string(),
     domain: v.string(),
     logo: v.optional(v.string()),
+    email: v.optional(v.string()),
+    motto: v.optional(v.string()),
+    phone: v.optional(v.string()),
     type: v.string(),
+    category: v.optional(v.string()),
+    yearFounded: v.optional(v.number()),
     verified: v.boolean(),
     registeration_doc: v.string(),
     address: v.id("addresses"),
@@ -172,25 +177,6 @@ export default defineSchema({
     .index("by_date_and_class", ["date", "classId"])
     .index("by_student_id", ["studentId"])
     .index("by_school_id", ["schoolId"]),
-
-  // Payments table: Tracks student payments
-  payments: defineTable({
-    studentId: v.id("users"),
-    schoolId: v.id("schools"),
-    amount: v.number(),
-    date: v.string(),
-    type: v.union(v.literal("tuition"), v.literal("fees"), v.literal("other")),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("paid"),
-      v.literal("overdue"),
-    ),
-    dueDate: v.string(),
-    description: v.optional(v.string()),
-  })
-    .index("by_student_id", ["studentId"])
-    .index("by_school_and_status", ["schoolId", "status"]),
-
   // Announcements table: Stores school-wide announcements
   announcements: defineTable({
     schoolId: v.id("schools"),
@@ -208,4 +194,227 @@ export default defineSchema({
     class: v.optional(v.id("classes")),
     school: v.optional(v.id("schools")),
   }).index("by_classId", ["class"]),
+
+  // Terms Configuration table: Stores school-specific term structure
+  academicConfig: defineTable({
+    schoolId: v.id("schools"),
+    academicYear: v.string(),
+    numberOfTerms: v.number(),
+    startDate: v.string(),
+    endDate: v.string(),
+    isActive: v.boolean(),
+    autoTermProgression: v.boolean(),
+    autoYearProgression: v.boolean(),
+    currentTerm: v.object({
+      termNumber: v.number(),
+      name: v.string(),
+      startDate: v.string(),
+      endDate: v.string(),
+      status: v.union(
+        v.literal("upcoming"),
+        v.literal("active"),
+        v.literal("completed"),
+      ),
+    }),
+    terms: v.array(
+      v.object({
+        termNumber: v.number(),
+        name: v.string(),
+        startDate: v.string(),
+        endDate: v.string(),
+        status: v.union(
+          v.literal("upcoming"),
+          v.literal("active"),
+          v.literal("completed"),
+        ),
+      }),
+    ),
+    nextYearConfig: v.optional(
+      v.object({
+        academicYear: v.string(),
+        startDate: v.string(),
+        endDate: v.string(),
+      }),
+    ),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_school_year", ["schoolId", "academicYear"]),
+
+  // Class Fee Structure
+  classFeeStructure: defineTable({
+    schoolId: v.id("schools"),
+    classId: v.id("classes"),
+    academicYear: v.string(),
+    termId: v.number(),
+    fees: v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        amount: v.number(),
+        dueDate: v.string(),
+        isCompulsory: v.boolean(),
+        description: v.optional(v.string()),
+        allowsInstallment: v.boolean(),
+        installmentConfig: v.optional(
+          v.object({
+            minimumFirstPayment: v.number(),
+            maximumInstallments: v.number(),
+            installmentDueDates: v.array(v.string()),
+          }),
+        ),
+        reminderDays: v.array(v.number()),
+      }),
+    ),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_class_term", ["classId", "academicYear", "termId"]),
+
+  payments: defineTable({
+    schoolId: v.id("schools"),
+    studentId: v.id("users"),
+    classId: v.id("classes"),
+    academicYear: v.string(),
+    termId: v.number(),
+    receiptNumber: v.string(),
+    amount: v.number(),
+    feeId: v.string(),
+    feeName: v.string(),
+    paymentDate: v.string(),
+    dueDate: v.optional(v.string()),
+    paymentMethod: v.union(
+      v.literal("cash"),
+      v.literal("transfer"),
+      v.literal("card"),
+      v.literal("pos"),
+      v.literal("cheque"),
+    ),
+    status: v.union(
+      v.literal("success"),
+      v.literal("pending"),
+      v.literal("failed"),
+    ),
+    isInstallment: v.boolean(),
+    installmentNumber: v.optional(v.number()),
+    totalInstallments: v.optional(v.number()),
+    description: v.optional(v.string()),
+    metadata: v.optional(v.object({})),
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_student", ["studentId"])
+    .index("by_receipt", ["receiptNumber"])
+    .index("by_class_term", ["classId", "academicYear", "termId"]),
+
+  // Outstanding Payments
+  outstandingPayments: defineTable({
+    schoolId: v.id("schools"),
+    studentId: v.id("users"),
+    classId: v.id("classes"),
+    academicYear: v.string(),
+    termId: v.number(),
+    feeId: v.string(),
+    feeName: v.string(),
+    amount: v.number(),
+    amountPaid: v.optional(v.number()),
+    remainingAmount: v.optional(v.number()),
+    dueDate: v.string(),
+    isCompulsory: v.boolean(),
+    lastReminderSent: v.optional(v.string()),
+    nextReminderDate: v.optional(v.string()),
+    status: v.union(
+      v.literal("paid"),
+      v.literal("unpaid"),
+      v.literal("partial"),
+      v.literal("overdue"),
+    ),
+    installmentStatus: v.optional(
+      v.object({
+        currentInstallment: v.number(),
+        totalInstallments: v.number(),
+        nextInstallmentDate: v.string(),
+        nextInstallmentAmount: v.number(),
+      }),
+    ),
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_student", ["studentId"])
+    .index("by_class_term", ["classId", "academicYear", "termId"])
+    .index("by_due_date", ["dueDate"]),
+
+  // Payment Notifications
+  paymentNotifications: defineTable({
+    schoolId: v.id("schools"),
+    studentId: v.id("users"),
+    outstandingPaymentId: v.id("outstandingPayments"),
+    type: v.union(
+      v.literal("reminder"),
+      v.literal("overdue"),
+      v.literal("receipt"),
+      v.literal("installment_due"),
+    ),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("failed"),
+    ),
+    scheduledFor: v.optional(v.string()),
+    sentAt: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+  }).index("by_student", ["studentId"]),
+
+  // Payment Templates
+  paymentTemplates: defineTable({
+    schoolId: v.id("schools"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    fees: v.array(
+      v.object({
+        name: v.string(),
+        amount: v.number(),
+        isCompulsory: v.boolean(),
+        allowsInstallment: v.boolean(),
+        installmentConfig: v.optional(
+          v.object({
+            minimumFirstPayment: v.number(),
+            maximumInstallments: v.number(),
+          }),
+        ),
+      }),
+    ),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }).index("by_school", ["schoolId"]),
+
+  // Payment Audit Logs
+  paymentAuditLogs: defineTable({
+    schoolId: v.id("schools"),
+    paymentId: v.optional(v.id("payments")),
+    outstandingPaymentId: v.optional(v.id("outstandingPayments")),
+    action: v.union(
+      v.literal("payment_created"),
+      v.literal("payment_updated"),
+      v.literal("payment_deleted"),
+      v.literal("reminder_sent"),
+      v.literal("status_changed"),
+    ),
+    performedBy: v.id("users"),
+    details: v.string(),
+    timestamp: v.string(),
+  }).index("by_school", ["schoolId"]),
+
+  termProgressLogs: defineTable({
+    schoolId: v.id("schools"),
+    academicYear: v.string(),
+    fromTerm: v.number(),
+    toTerm: v.number(),
+    progressedAt: v.string(),
+    status: v.union(v.literal("success"), v.literal("failed")),
+    error: v.optional(v.string()),
+  }).index("by_school_year", ["schoolId", "academicYear"]),
 });

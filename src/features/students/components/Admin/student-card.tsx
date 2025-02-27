@@ -6,18 +6,10 @@ import {
     CardContent,
     CardHeader,
 } from "@/components/ui/card"
+import { Student } from '../../types'
 
 interface StudentCardProps {
-    student: {
-        id: number
-        name: string
-        class: string
-        group: string
-        gender: string
-        phone: string
-        email: string
-        avatar: string
-    }
+    student: Student
 }
 
 export function StudentCard({ student }: StudentCardProps) {
@@ -28,8 +20,8 @@ export function StudentCard({ student }: StudentCardProps) {
                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
                         <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white">
                             <Image
-                                src={student.avatar}
-                                alt={student.name}
+                                src={student.image ?? '/images/default-avatar.png'}
+                                alt={student.name ?? ""}
                                 width={80}
                                 height={80}
                                 className="object-cover"
@@ -42,7 +34,7 @@ export function StudentCard({ student }: StudentCardProps) {
                 <div className="text-center space-y-1">
                     <h3 className="font-semibold">{student.name}</h3>
                     <p className="text-sm text-gray-500">
-                        Class {student.class} • Group {student.group}
+                        Class {student.currentClass?.title}
                     </p>
                 </div>
                 <div className="mt-4 space-y-2">
