@@ -40,13 +40,21 @@ export default defineSchema({
     guardianPhone: v.optional(v.string()),
     address: v.optional(v.string()),
     dob: v.optional(v.string()),
+    favoriteWorkspaces: v.optional(v.array(v.id("workspace"))),
+    shared: v.optional(v.array(v.id("workspace"))),
+    recents: v.optional(v.array(v.id("workspace"))),
+    searchableText: v.optional(v.string()),
     // Teacher-specific fields can be added here in the future
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
     .index("by_school", ["schoolId", "role"])
     .index("by_class", ["currentClass"])
-    .index("by_email_schoolId", ["email", "schoolId"]),
+    .index("by_email_schoolId", ["email", "schoolId"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["schoolId"],
+    }),
 
   // =========================================================================
   // School Management
@@ -68,6 +76,73 @@ export default defineSchema({
     address: v.id("addresses"),
     user: v.optional(v.id("users")), // Reference to the user who created/manages the school
   }).index("by_domain", ["domain"]),
+
+  // create workspace table
+  workspace: defineTable({
+    name: v.string(),
+    description: v.string(),
+    schoolId: v.id("schools"),
+    documents: v.optional(v.array(v.id("document"))),
+    stats: v.optional(
+      v.object({
+        totalDocuments: v.number(),
+        totalPages: v.number(),
+        studyTime: v.string(),
+        quizzesTaken: v.number(),
+        averageScore: v.string(),
+      }),
+    ),
+    lastUpdated: v.optional(v.string()),
+  }),
+
+  // documents schema
+  document: defineTable({
+    title: v.string(),
+    file: v.id("_storage"),
+    type: v.string(), //pdf, //docx , //pptx
+    size: v.string(),
+    workspaceId: v.optional(v.id("workspace")),
+    userId: v.optional(v.id("user")),
+    uploadedAt: v.string(),
+    thumbnail: v.optional(v.string()),
+  }).index("by_workspace", ["workspaceId"]),
+
+  // the document chunk from its embedidng
+  documentChunk: defineTable({
+    documentId: v.id("document"),
+    page: v.optional(v.number()),
+    chunkIndex: v.optional(v.number()),
+    content: v.optional(v.string()),
+    embedding: v.array(v.float64()),
+  }).vectorIndex("by_embedding", {
+    vectorField: "embedding",
+    dimensions: 1024,
+    filterFields: ["documentId", "page"],
+  }),
+
+  // worspace member
+  workspaceMember: defineTable({
+    workspaceId: v.id("workspace"),
+    userId: v.id("users"),
+    schoolId: v.id("schools"),
+    role: v.union(v.literal("creator"), v.literal("member")),
+  }).index("by_user", ["userId", "schoolId"]),
+
+  // recent activity
+  recentActivity: defineTable({
+    type: v.union(
+      v.literal("quiz_completed"),
+      v.literal("document_uploaded"),
+      v.literal("workspace_created"),
+      v.literal("flashcard_session"),
+    ),
+    title: v.string(),
+    date: v.string(),
+    score: v.optional(v.number()),
+    cardsReviewed: v.optional(v.number()),
+    workspaceId: v.optional(v.id("workspace")), // to get recent activities of a workspace
+    userId: v.optional(v.id("user")), // to get recent activities of a user
+  }).index("by_workspace", ["workspaceId"]),
 
   // Addresses table: Stores detailed address information for schools
   addresses: defineTable({
@@ -122,11 +197,16 @@ export default defineSchema({
     category: v.string(),
     schoolId: v.id("schools"),
     isCore: v.boolean(),
+    searchableText: v.optional(v.string()),
     isActive: v.boolean(), // Schools can deactivate subjects
     // customFields can be added here for school-specific customizations
   })
     .index("by_school", ["schoolId"])
-    .index("by_school_and_name", ["schoolId", "name"]),
+    .index("by_school_and_name", ["schoolId", "name"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["schoolId"],
+    }),
 
   // SubjectTeachers junction table: Links subjects to teachers and classes
   subjectTeachers: defineTable({
@@ -177,6 +257,7 @@ export default defineSchema({
     .index("by_date_and_class", ["date", "classId"])
     .index("by_student_id", ["studentId"])
     .index("by_school_id", ["schoolId"]),
+
   // Announcements table: Stores school-wide announcements
   announcements: defineTable({
     schoolId: v.id("schools"),

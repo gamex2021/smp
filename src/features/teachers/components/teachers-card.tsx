@@ -1,12 +1,12 @@
-import Image from 'next/image'
-import { Mail, MoreHorizontal, BookOpen, GraduationCap } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
     CardHeader,
 } from "@/components/ui/card"
-import { Teacher } from '../types'
+import { BookOpen, GraduationCap, Mail } from 'lucide-react'
+import Image from 'next/image'
+import TeacherActions from '../shared/teacher-actions'
+import { type Teacher } from '../types'
 
 interface TeacherCardProps {
     teacher: Teacher
@@ -50,13 +50,8 @@ export function TeacherCard({ teacher }: TeacherCardProps) {
                     </div>
                 </div>
                 <div className="mt-4 flex justify-end">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-[#2E8B57] hover:text-[#2E8B57]/90"
-                    >
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                    {/* Actions to edit or delete a teacher from the grid cards */}
+                    <TeacherActions teacher={teacher} />
                 </div>
             </CardContent>
         </Card>

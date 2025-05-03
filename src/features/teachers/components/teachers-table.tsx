@@ -12,7 +12,7 @@ import {
 import { MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
 import { type Teacher } from '../types'
-import { TeachersPagination } from './teachers-pagination'
+import TeacherActions from "../shared/teacher-actions"
 
 
 
@@ -23,7 +23,7 @@ interface TeachersTableProps {
     onPageChange: (page: number) => void
 }
 
-export function TeachersTable({ teachers, currentPage, onPageChange }: TeachersTableProps) {
+export function TeachersTable({ teachers, currentPage }: TeachersTableProps) {
     const teachersPerPage = 6
     const indexOfLastTeacher = currentPage * teachersPerPage
     const indexOfFirstTeacher = indexOfLastTeacher - teachersPerPage
@@ -66,27 +66,21 @@ export function TeachersTable({ teachers, currentPage, onPageChange }: TeachersT
                             }</TableCell>
                             <TableCell>{teacher.email}</TableCell>
                             <TableCell>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-[#2E8B57] hover:text-[#2E8B57]/90"
-                                >
-                                    <Image src={"/images/box-edit.png"} alt='box-edit' width={200} height={200} className='h-7 w-7' />
-
-                                </Button>
+                                {/* Actions to edit or delete a teacher from the table */}
+                                <TeacherActions teacher={teacher} />
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
 
-            <div className="py-4 px-6 border-t">
+            {/* <div className="py-4 px-6 border-t">
                 <TeachersPagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(teachers.length / teachersPerPage)}
                     onPageChange={onPageChange}
                 />
-            </div>
+            </div> */}
         </div>
     )
 }

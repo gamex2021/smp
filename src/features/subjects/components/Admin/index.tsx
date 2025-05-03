@@ -2,23 +2,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "use client";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDomain } from '@/context/DomainContext';
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { useState } from 'react';
 import { api } from "~/_generated/api";
 import { SubjectCard } from '../../shared/subject-card';
 import { SubjectCardSkeleton } from './components/SubjectCardSkeleton';
 import { CreateSubjectCard } from "./components/add-subject-card";
+import { SearchHeader } from './components/search-header';
+import { Button } from '@/components/ui/button';
 
 
 type Props = object
@@ -26,24 +19,29 @@ type Props = object
 const SUBJECTS_PER_PAGE = 12;
 
 const AdminSubjects = (props: Props) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [cursor, setCursor] = useState<string>();
+
     const [search, setSearch] = useState("");
     const { domain } = useDomain()
     // get the schoolInfo which includes the id,
     const schoolInfo = useQuery(api.queries.school.findSchool, {
         domain,
     });
-    const subjectsQuery = useQuery(api.queries.subject.getSchoolSubjectsWithPagination, {
-        search: search || undefined,
-        cursor: cursor,
-        schoolId: schoolInfo?.id,
-        numItems: SUBJECTS_PER_PAGE,
-    });
+
+
+    const {
+        results: subjects,
+        status,
+        loadMore,
+    } = usePaginatedQuery(api.queries.subject.getSchoolSubjectsWithPagination,
+        schoolInfo?.id ?
+            { schoolId: schoolInfo.id, search }
+            : "skip",
+        { initialNumItems: SUBJECTS_PER_PAGE })
+
 
 
     // Handle loading state
-    if (!subjectsQuery) {
+    if (status === "LoadingMore") {
         return (
             <div className="p-6 space-y-6">
                 {/* Header skeleton */}
@@ -68,19 +66,18 @@ const AdminSubjects = (props: Props) => {
         );
     }
 
-    const { subjects, continueCursor } = subjectsQuery;
-
-    console.log("these are the subjects", subjects)
-
 
     return (
         <div className="p-6 space-y-6">
+
+            {/* to search through the subjects */}
+            <SearchHeader setSearch={setSearch} />
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {/* the list of subjects for the school */}
                 {
                     subjects?.map((subject) => (
-                        <SubjectCard key={subject?._id} id={subject._id} name={subject?.name} />
+                        <SubjectCard key={subject?._id} subject={subject} id={subject._id} name={subject?.name} />
                     ))
                 }
 
@@ -89,22 +86,13 @@ const AdminSubjects = (props: Props) => {
             </div>
 
             {/* THE PAGINATION to be implemented later */}
-            <Pagination className="my-2">
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            {status === "CanLoadMore" && (
+                <div className="mt-8 flex justify-center">
+                    <Button role="button" aria-label='Load more teachers' onClick={() => loadMore(SUBJECTS_PER_PAGE)} variant="outline" className="px-8">
+                        Load More
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }

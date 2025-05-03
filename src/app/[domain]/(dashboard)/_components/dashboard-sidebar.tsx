@@ -10,14 +10,28 @@ import {
     SidebarProvider,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { BarChart, BookOpen, GraduationCap, Presentation, LogOut, MessageSquare, School, Users, MenuIcon, Rss, Banknote, Settings } from 'lucide-react'
-import { RxDashboard } from "react-icons/rx"
+import {
+    BarChart,
+    BookOpen,
+    GraduationCap,
+    Presentation,
+    LogOut,
+    MessageSquare,
+    School,
+    Users,
+    MenuIcon,
+    Rss,
+    Banknote,
+    Settings,
+    BookAIcon,
+} from 'lucide-react'
+import { RxDashboard } from 'react-icons/rx'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useQuery } from 'convex/react'
 import { api } from '~/_generated/api'
-
-
+import { useAuthActions } from '@convex-dev/auth/react'
+import { toast } from 'sonner'
 
 const icons = {
     RxDashboard,
@@ -30,33 +44,67 @@ const icons = {
     MessageSquare,
     Rss,
     Banknote,
-    Settings
+    Settings,
+    BookAIcon,
 }
 
 export function DashboardSidebar() {
     const pathname = usePathname()
-    // GET THE USER USING THE QUERY CONVEX OPTION
-    const user = useQuery(api.queries.user.currentUser);
+    const user = useQuery(api.queries.user.currentUser)
+    const { signOut } = useAuthActions()
+    const router = useRouter()
 
-
-    // console.log("this is the user", user)
+    const handleLogout = async () => {
+        try {
+            await signOut()
+            toast.success('Logged out successfully')
+            router.push('/sign-in')
+        } catch (error) {
+            console.error('Logout error:', error)
+            toast.error('Failed to log out. Please try again.')
+        }
+    }
 
     return (
-        <SidebarProvider className='w-fit' defaultOpen>
-            <Sidebar>
+        <SidebarProvider className="w-fit" defaultOpen>
+            <Sidebar
+                role="complementary"
+                aria-label="Application sidebar"
+                id="dashboard-sidebar"
+            >
                 <SidebarHeader className="border-b px-6">
                     <div className="flex h-[60px] items-center">
-                        <span className="text-lg font-bold text-white">{user?.schoolName ?? "TSX"}</span>
-                        <MenuIcon className="h-6 w-6 ml-auto cursor-pointer text-white" />
+                        <span className="text-lg font-bold text-white">
+                            {user?.schoolName ?? 'TSX'}
+                        </span>
+                        {/* if this toggles sidebar, wrap in button */}
+                        <button
+                            aria-label="Toggle sidebar"
+                            aria-controls="dashboard-sidebar"
+                            aria-expanded="true"
+                            className="ml-auto"
+                        >
+                            <MenuIcon
+                                className="h-6 w-6 cursor-pointer text-white"
+                                aria-hidden="true"
+                            />
+                        </button>
                     </div>
                 </SidebarHeader>
+
                 <SidebarContent>
-                    <nav className="grid gap-1 px-2 mt-[50px]">
+                    <nav
+                        role="navigation"
+                        aria-label="Primary"
+                        className="grid gap-1 px-2 mt-[50px]"
+                    >
                         {mockNavItems.map((item) => {
                             const Icon = icons[item.icon as keyof typeof icons]
                             const isActive = pathname === item.href
 
-                            return user?.role && item.roles.includes(user.role) ? (
+                            if (!user?.role || !item.roles.includes(user.role)) return null
+
+                            return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
@@ -66,28 +114,33 @@ export function DashboardSidebar() {
                                         'text-[#ffffffd7]',
                                         isActive && 'bg-[#2E8B5766] text-white'
                                     )}
+                                    aria-current={isActive ? 'page' : undefined}
                                 >
-                                    {icons[item.icon as keyof typeof icons] ? (
-                                        <Icon className={cn(
-                                            "h-4 w-4",
-                                            isActive && "text-white"
-                                        )} />
+                                    {Icon ? (
+                                        <Icon
+                                            className={cn('h-4 w-4', isActive && 'text-white')}
+                                            aria-hidden="true"
+                                        />
                                     ) : (
                                         <span>Invalid icon</span>
                                     )}
                                     {item.title}
                                 </Link>
-                            ) : null
+                            )
                         })}
                     </nav>
                 </SidebarContent>
+
                 <SidebarFooter className="p-2">
                     <div className="grid gap-1 text-[#ffffffd7]">
                         <Button
+                            onClick={handleLogout}
+                            type="button"
                             variant="ghost"
                             className="w-full justify-start gap-3 px-3 hover:bg-[#2E8B5766] hover:text-[#ffffffd7]"
+                            aria-label="Log out"
                         >
-                            <LogOut className="h-4 w-4" />
+                            <LogOut className="h-4 w-4" aria-hidden="true" />
                             Log out
                         </Button>
                     </div>
@@ -96,4 +149,3 @@ export function DashboardSidebar() {
         </SidebarProvider>
     )
 }
-

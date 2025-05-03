@@ -3,9 +3,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import bcrypt from "bcryptjs";
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import { action, internalMutation } from "../_generated/server";
 import { Resend as ResendAPI } from "resend";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 const resend_api = process.env.AUTH_RESEND_KEY;
 
@@ -56,6 +57,11 @@ export const createStudent = action({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
     // get the password for the teacher
     const password = generatePassword();
 
@@ -108,6 +114,134 @@ export const createStudent = action({
     } catch (error) {
       console.error("This is the error", error);
     }
+
+    return { success: true };
+  },
+});
+
+// remove a student from a class, this will be used to remove a student from a class
+export const removeClassStudent = internalMutation({
+  args: {
+    id: v.id("classStudent"),
+  },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.delete(id);
+  },
+});
+
+// update the student informatiion, this will be used to update the student information
+export const updateStudent = action({
+  args: {
+    studentId: v.id("users"),
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    currentClass: v.optional(v.id("classes")),
+    gender: v.string(),
+    bio: v.optional(v.string()),
+    image: v.optional(v.id("_storage")),
+    guardianName: v.string(),
+    guardianPhone: v.string(),
+    address: v.string(),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const { studentId, schoolId, currentClass } = args;
+
+    // verifying that the student exists and is in the same school as the user
+    const studentDoc = await ctx.runQuery(internal.queries.user.getUser, {
+      userId: studentId,
+    });
+    if (!studentDoc || studentDoc.schoolId !== schoolId) {
+      throw new Error("Invalid student");
+    }
+
+    await ctx.runMutation(internal.mutations.user.updateEntity, {
+      id: studentId,
+      name: args.name,
+      email: args.email,
+      schoolId: args.schoolId,
+      phone: args.phone,
+      bio: args.bio,
+      gender: args.gender,
+      currentClass: currentClass,
+      image: args.image,
+    });
+
+    if (args.currentClass) {
+      // get the current class of the student
+      const classStudent = await ctx.runQuery(
+        api.queries.student.getStudentCurrentClass,
+        {
+          studentId: studentId,
+          schoolId: schoolId,
+        },
+      );
+
+      // remove the student from the class
+      await ctx.runMutation(internal.mutations.student.removeClassStudent, {
+        id: classStudent._id,
+      });
+      // add the student to the new class
+      await ctx.runMutation(internal.mutations.student.addClassStudent, {
+        classId: args.currentClass,
+        studentId,
+        schoolId: args.schoolId,
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+// delete the student, this will be used to delete the student
+export const deleteStudent = action({
+  args: {
+    studentId: v.id("users"),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, { studentId, schoolId }) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // verifying that the student exists and is in the same school as the user
+    const studentDoc = await ctx.runQuery(internal.queries.user.getUser, {
+      userId: studentId,
+    });
+    if (!studentDoc || studentDoc.schoolId !== schoolId) {
+      throw new Error("Invalid student");
+    }
+
+    //delete the current class of the student from memory too
+    const classStudent = await ctx.runQuery(
+      api.queries.student.getStudentCurrentClass,
+      {
+        studentId: studentId,
+        schoolId: schoolId,
+      },
+    );
+
+    if (classStudent) {
+      await ctx.runMutation(internal.mutations.student.removeClassStudent, {
+        id: classStudent._id,
+      });
+    }
+
+    // delete the student from the database
+    await ctx.runMutation(internal.mutations.user.deleteEntity, {
+      id: studentId,
+    });
 
     return { success: true };
   },

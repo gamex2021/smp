@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Id } from "../../../../../convex/_generated/dataModel";
+import { type Id } from "../../../../../convex/_generated/dataModel";
 import { showErrorToast } from "@/lib/handle-error";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -39,8 +39,8 @@ export function SignInForm({ schoolId }: Props) {
   const router = useRouter();
   const convex = useConvex();
   const [loading, setLoading] = React.useState(false);
-  const { signIn } = useAuthActions();
   const [showCode, setShowCode] = React.useState(false);
+  const { signIn } = useAuthActions();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {

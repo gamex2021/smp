@@ -57,7 +57,7 @@ export function SearchHeader({ title }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">{title ?? "All Classes"}</h1>
-                <Select
+                {/* <Select
                     disabled={isPending}
                     onValueChange={(e: string) => {
                         startTransition(() => {
@@ -85,7 +85,7 @@ export function SearchHeader({ title }: Props) {
                             </SelectItem>
                         ))}
                     </SelectContent>
-                </Select>
+                </Select> */}
             </div>
 
             {/* Search Bar */}

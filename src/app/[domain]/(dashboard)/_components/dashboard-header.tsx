@@ -12,12 +12,28 @@ import { useQuery } from 'convex/react';
 import { Bell } from 'lucide-react'
 import Image from 'next/image'
 import { api } from '~/_generated/api';
-
-
+import { useAuthActions } from "@convex-dev/auth/react"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export function DashboardHeader() {
     // GET THE USER USING THE QUERY CONVEX OPTION
+
     const user = useQuery(api.queries.user.currentUser);
+    const { signOut } = useAuthActions();
+    const router = useRouter()
+
+    // function to logout and go straight to the login page of the tenant
+    const handleLogout = async () => {
+        try {
+            await signOut()
+            toast.success("Logged out successfully")
+            router.push("/sign-in")
+        } catch (error) {
+            console.error("Logout error:", error)
+            toast.error("Failed to log out. Please try again.")
+        }
+    }
 
     return (
         <header className="sticky top-0 z-50 min-h-[75px] w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -74,7 +90,7 @@ export function DashboardHeader() {
                             <DropdownMenuItem>Profile</DropdownMenuItem>
                             <DropdownMenuItem>Settings</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer' onClick={handleLogout}>
                                 Log out
                             </DropdownMenuItem>
                         </DropdownMenuContent>

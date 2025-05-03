@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { MoreHorizontal } from 'lucide-react'
 import {
     Table,
     TableBody,
@@ -11,9 +8,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { StudentsPagination } from './students-pagination'
-import { Student } from '../../types'
+import { MoreHorizontal } from 'lucide-react'
+import Image from 'next/image'
+import { useState } from 'react'
+import { type Student } from '../../types'
+import StudentActions from './shared/student-actions'
 
 
 
@@ -31,6 +30,8 @@ export function StudentsTable({ students }: StudentsTableProps) {
     const indexOfFirstStudent = indexOfLastStudent - studentsPerPage
     const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent)
 
+
+    console.log("this is the students", students)
     return (
         <div className="bg-white rounded-lg border shadow-sm">
             <Table>
@@ -68,26 +69,20 @@ export function StudentsTable({ students }: StudentsTableProps) {
                             <TableCell>{student.phone}</TableCell>
                             <TableCell>{student.email}</TableCell>
                             <TableCell>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-[#2E8B57] hover:text-[#2E8B57]/90"
-                                >
-                                    <Image src={"/images/box-edit.png"} alt='box-edit' width={200} height={200} className='h-7 w-7' />
-                                </Button>
+                                <StudentActions student={student} />
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
 
-            <div className="py-4 px-6 border-t">
+            {/* <div className="py-4 px-6 border-t">
                 <StudentsPagination
                     currentPage={page}
                     totalPages={Math.ceil(students.length / studentsPerPage)}
                     onPageChange={setPage}
                 />
-            </div>
+            </div> */}
         </div>
     )
 }

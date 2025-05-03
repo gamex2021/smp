@@ -1,7 +1,6 @@
-import { mockAnnouncements, mockEvents } from '@/app/config/siteConfig'
 import { RoleProtected } from '@/components/providers/role-protected'
-import { AnnouncementContent } from '@/features/announcement/components/announcement-content'
-import React, { Suspense } from 'react'
+import AdminAnnouncements from '@/features/announcement/components/admin-announcements'
+import { Suspense } from 'react'
 
 type Props = object
 
@@ -10,10 +9,11 @@ const page = (props: Props) => {
         <RoleProtected allowedRoles={['ADMIN', 'TEACHER', 'STUDENT']}>
             <div className="p-6 max-w-[1600px] mx-auto space-y-8">
                 <Suspense >
-                    <AnnouncementContent
+                    {/* <AnnouncementContent
                         initialAnnouncements={mockAnnouncements}
                         initialEvents={mockEvents}
-                    />
+                    /> */}
+                    <AdminAnnouncements />
                 </Suspense>
             </div>
         </RoleProtected>

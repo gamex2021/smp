@@ -2,10 +2,10 @@
 
 import * as React from "react";
 
-import { api } from "convex/_generated/api";
+import { api } from "~/_generated/api";
 import { useQuery } from "convex/react";
 import { ClassCard } from "@/features/classes/components/classes-card";
-import { Id } from "convex/_generated/dataModel";
+import { type Id } from "~/_generated/dataModel";
 import { CreateClassGroup } from "./create-class-group";
 
 type Props = {

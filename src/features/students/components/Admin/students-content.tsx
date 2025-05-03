@@ -10,8 +10,9 @@ import { StudentsTable } from './students-table'
 import { StudentsGrid } from './students-grid'
 import { useDomain } from '@/context/DomainContext'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useQuery } from 'convex/react'
+import { usePaginatedQuery, useQuery } from 'convex/react'
 import { api } from '~/_generated/api'
+import { Button } from '@/components/ui/button'
 
 interface Student {
     id: number
@@ -33,22 +34,20 @@ const STUDENTS_PER_PAGE = 12;
 
 export function StudentsContent({ initialStudents }: StudentsContentProps) {
     const [view, setView] = useState<'table' | 'grid'>('table')
-    const [searchQuery, setSearchQuery] = useState('')
     const [page, setPage] = useState(1)
-    const [cursor, setCursor] = useState<string>();
     const [search, setSearch] = useState("");
     const { domain } = useDomain()
 
+    // get the students from the convex query and paginate
+    const {
+        results: students,
+        status,
+        loadMore,
+    } = usePaginatedQuery(api.queries.student.getStudentsWithPagination, domain ? { domain, search } : "skip", { initialNumItems: 12 })
 
-    const studentsquery = useQuery(api.queries.student.getStudentsWithPagination, {
-        search: search || undefined,
-        cursor: cursor,
-        domain,
-        numItems: STUDENTS_PER_PAGE,
-    });
 
     // Handle loading state
-    if (!studentsquery) {
+    if (status === "LoadingMore") {
         return (
             <div className="p-6 space-y-6">
                 {/* Header skeleton */}
@@ -92,10 +91,9 @@ export function StudentsContent({ initialStudents }: StudentsContentProps) {
         )
     }
 
-    const { students } = studentsquery;
     return (
         <>
-            <StudentsHeader view={view} onViewChange={setView} onSearch={setSearchQuery} />
+            <StudentsHeader view={view} onViewChange={setView} onSearch={setSearch} />
 
             {view === 'table' ? (
                 <StudentsTable students={students} />
@@ -106,6 +104,13 @@ export function StudentsContent({ initialStudents }: StudentsContentProps) {
                     studentsPerPage={STUDENTS_PER_PAGE}
                     onPageChange={setPage}
                 />
+            )}
+            {status === "CanLoadMore" && (
+                <div className="mt-8 flex justify-center">
+                    <Button role="button" aria-label='Load more teachers' onClick={() => loadMore(12)} variant="outline" className="px-8">
+                        Load More
+                    </Button>
+                </div>
             )}
         </>
     )

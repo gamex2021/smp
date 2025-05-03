@@ -31,13 +31,13 @@ export function StudentsGrid({
                     <StudentCard key={student._id} student={student} />
                 ))}
             </div>
-            <div className="flex justify-center">
+            {/* <div className="flex justify-center">
                 <StudentsPagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(students.length / studentsPerPage)}
                     onPageChange={onPageChange}
                 />
-            </div>
+            </div> */}
         </div>
     )
 }

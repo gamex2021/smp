@@ -19,7 +19,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-export function SearchHeader() {
+import { Dispatch, SetStateAction } from 'react'
+export function SearchHeader({ setSearch }: { setSearch: Dispatch<SetStateAction<string>> }) {
 
 
     return (
@@ -66,6 +67,10 @@ export function SearchHeader() {
                 <div className="relative ">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <Input
+                        type="text"
+                        id="search"
+                        name="search"
+                        onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search for a subject......"
                         className="pl-9 w-full"
                     />

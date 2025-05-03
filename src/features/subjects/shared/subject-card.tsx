@@ -6,12 +6,15 @@ import { MoreVertical, Plus } from 'lucide-react'
 import Image from 'next/image'
 import AssignSubjectToTeacher from "../components/Admin/components/assign-subject-to-teacher"
 import { type Id } from "~/_generated/dataModel"
+import { type Subject } from "../types"
+import SubjectActions from "./subject-actions"
 
 interface BaseSubjectCardProps {
     id: Id<"subjects">
     name: string
     onClick?: () => void
     onAssign?: () => void
+    subject: Subject
 }
 
 interface TeacherProps {
@@ -37,13 +40,22 @@ export function SubjectCard({
     onAssign,
     teacher,
     teacherName,
-    className
+    className,
+    subject
 }: SubjectCardProps) {
+
+    console.log("subject", subject)
     return (
         <div
             onClick={onClick}
             className="bg-[#2E8B57] rounded-2xl max-w-[300px] aspect-square p-4 text-white cursor-pointer hover:shadow-lg transition-all duration-200"
         >
+
+            {/* the subject actin to delete, view and edit the subject */}
+            <div className="flex justify-end">
+                <SubjectActions subject={subject} />
+            </div>
+
             <div className="h-full flex flex-col">
                 <h3 className="font-medium text-lg mb-4 text-[#F8FBFA] ">{name}</h3>
                 <div className="flex-1 flex items-center bg-[#57a178] rounded-[16px] justify-center mb-4">

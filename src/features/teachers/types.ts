@@ -28,6 +28,9 @@ export interface Teacher {
     isCore: boolean;
   } | null)[];
   email: string;
+  qualifications? : string;
+  bio? : string;
+  phone? : string;
   gender?: string;
   image?: string | null;
 }

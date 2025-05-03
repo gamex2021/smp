@@ -27,11 +27,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "convex/_generated/api";
+import { api } from "~/_generated/api";
 import { showErrorToast } from "@/lib/handle-error";
 import { useParams } from "next/navigation";
 import { Icons } from "@/components/icons";
-import { Id } from "convex/_generated/dataModel";
+import { type Id } from "~/_generated/dataModel";
 
 export function CreateClassGroup({ classId }: { classId: string }) {
   return (

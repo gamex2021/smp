@@ -3,6 +3,8 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { getSchoolByDomain } from "./helpers";
+import { paginationOptsValidator } from "convex/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Get all subjects for a school
 export const getSchoolSubjects = query({
@@ -52,7 +54,7 @@ export const getSTC = query({
 
     return subjects;
   },
-}); 
+});
 
 // get the class, subject and teachers relation via the subjectId
 export const getSTCBySubjectId = query({
@@ -61,6 +63,10 @@ export const getSTCBySubjectId = query({
     domain: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not found");
+    }
     // this domain is essentially just for safety in this function, if the domain is not found then the subjectteachers schema cannot be queried
     const school = await getSchoolByDomain(ctx, args.domain);
 
@@ -98,54 +104,66 @@ export const getSchoolSubjectsWithPagination = query({
   args: {
     search: v.optional(v.string()),
     // categoryId: v.optional(v.id('subjectCategories')),
-    schoolId: v.optional(v.id("schools")),
-    cursor: v.optional(v.string()),
-    numItems: v.number(),
+    schoolId: v.id("schools"),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const { cursor, numItems, schoolId } = args;
-
-    let newCursor: string | null;
-
-    if (!schoolId) {
-      return { subjects: [], cursor: null };
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not found");
     }
 
-    if (!cursor) {
-      newCursor = null;
+    const { search, schoolId } = args;
+
+    // Stage 1: Initialize the query
+    const tableQuery = ctx.db.query("subjects");
+
+    // Stage 2: Apply appropriate query approach based on available filters
+    let queryWithFilters;
+
+    if (search && search.length > 0) {
+      queryWithFilters = tableQuery
+        .withSearchIndex("search_user", (q) =>
+          q
+            .search("searchableText", args.search ?? "")
+            .eq("schoolId", schoolId),
+        )
+        .filter((q) => q.eq(q.field("schoolId"), schoolId));
     } else {
-      newCursor = cursor;
+      queryWithFilters = tableQuery
+        .filter((q) => q.eq(q.field("schoolId"), schoolId))
+        .order("desc");
     }
 
-    let query = ctx.db
-      .query("subjects")
-      .withIndex("by_school", (q) => q.eq("schoolId", schoolId));
-
-    // Apply category filter if provided
-    // if (args.categoryId) {
-    //   query = query.filter((q) => q.eq(q.field('categoryId'), args.categoryId));
-    // }
-
-    // Apply search filter if provided
-    if (args.search) {
-      query = query.filter((q) =>
-        q.or(
-          q.eq(q.field("name"), args.search!),
-          q.eq(q.field("description"), args.search!),
-        ),
-      );
-    }
-
-    // Get paginated results
-    const subjects = await query
-      .order("desc")
-      .paginate({ cursor: newCursor, numItems });
+    const paginationResult = await queryWithFilters.paginate(
+      args.paginationOpts,
+    );
 
     return {
-      subjects: subjects.page.map((subject) => ({
-        ...subject,
-      })),
-      continueCursor: subjects.continueCursor,
+      ...paginationResult,
     };
+  },
+});
+
+// get the subject by Id
+export const getSubjectById = query({
+  args: {
+    subjectId: v.id("subjects"),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const subject = await ctx.db.get(args.subjectId);
+
+    // the subjectId must belong to the schoolId
+    if (!subject || subject.schoolId !== args.schoolId) {
+      throw new Error("Subject not found");
+    }
+
+    return subject;
   },
 });

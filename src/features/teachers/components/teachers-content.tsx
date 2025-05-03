@@ -9,32 +9,29 @@ import { TeachersHeader } from './teachers-header'
 import { TeachersTable } from './teachers-table'
 import { TeachersGrid } from './teachers-grid'
 import { useDomain } from '@/context/DomainContext'
-import { useQuery } from 'convex/react'
+import { usePaginatedQuery, useQuery } from 'convex/react'
 import { api } from '~/_generated/api'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 
 
-const TEACHERS_PER_PAGE = 12;
 
 export function TeachersContent() {
     const [view, setView] = useState<'table' | 'grid'>('table')
-    const [searchQuery, setSearchQuery] = useState('')
     const [page, setPage] = useState(1)
-    const [cursor, setCursor] = useState<string>();
     const [search, setSearch] = useState("");
     const { domain } = useDomain()
 
-    const teachersquery = useQuery(api.queries.teacher.getTeachersWithPagination, {
-        search: search || undefined,
-        cursor: cursor,
-        domain,
-        numItems: TEACHERS_PER_PAGE,
-    });
 
+    const {
+        results: teachers,
+        status,
+        loadMore,
+    } = usePaginatedQuery(api.queries.teacher.getTeachersWithPagination, domain ? { domain, search } : "skip", { initialNumItems: 12 })
 
 
     // Handle loading state
-    if (!teachersquery) {
+    if (status === "LoadingMore") {
         return (
             <div className="p-6 space-y-6">
                 {/* Header skeleton */}
@@ -77,7 +74,7 @@ export function TeachersContent() {
             </div>
         )
     }
-    const { teachers } = teachersquery;
+
 
 
     // console.log("this is the teachers currently", teachers)
@@ -86,7 +83,7 @@ export function TeachersContent() {
             <TeachersHeader
                 view={view}
                 onViewChange={setView}
-                onSearch={setSearchQuery}
+                onSearch={setSearch}
             />
             {view === 'table' ? (
                 <TeachersTable
@@ -100,6 +97,13 @@ export function TeachersContent() {
                     currentPage={page}
                     onPageChange={setPage}
                 />
+            )}
+            {status === "CanLoadMore" && (
+                <div className="mt-8 flex justify-center">
+                    <Button role="button" aria-label='Load more teachers' onClick={() => loadMore(12)} variant="outline" className="px-8">
+                        Load More
+                    </Button>
+                </div>
             )}
         </>
     )

@@ -6,6 +6,8 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action, internalMutation } from "../_generated/server";
 import { Resend as ResendAPI } from "resend";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { Id } from "../_generated/dataModel";
 
 const resend_api = process.env.AUTH_RESEND_KEY;
 
@@ -66,6 +68,26 @@ export const UpdateteacherSubjectClass = internalMutation({
     // Create new relationship
     return await ctx.db.patch(existingRelation._id, {
       teacherId,
+    });
+  },
+});
+
+export const updateteachersubject = internalMutation({
+  args: {
+    assignmentId: v.id("subjectTeachers"),
+  },
+  handler: async (ctx, args) => {
+    const { assignmentId } = args;
+
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    return await ctx.db.patch(assignmentId, {
+      teacherId: undefined, // Set to undefined or use another appropriate default value
     });
   },
 });
@@ -164,6 +186,235 @@ export const createTeacher = action({
     } catch (error) {
       console.error("This is the error", error);
     }
+
+    return { success: true };
+  },
+});
+
+// Update teacher information
+export const updateTeacher = action({
+  args: {
+    teacherId: v.id("users"),
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    qualifications: v.optional(v.string()),
+    classAssigned: v.optional(v.array(v.id("classes"))),
+    gender: v.string(),
+    bio: v.optional(v.string()),
+    image: v.optional(v.id("_storage")),
+    isClassTeacher: v.optional(v.boolean()),
+    subjects: v.optional(
+      v.array(
+        v.object({
+          subject: v.id("subjects"),
+          classes: v.id("classes"),
+        }),
+      ),
+    ),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const { teacherId, schoolId, isClassTeacher, classAssigned, subjects } =
+      args;
+
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Verify that the teacher exists
+    const teacher = await ctx.runQuery(internal.queries.user.getUser, {
+      userId: teacherId,
+    });
+
+    if (!teacher || teacher.schoolId !== schoolId) {
+      throw new Error("Teacher not found");
+    }
+
+    // Update teacher basic information
+    await ctx.runMutation(internal.mutations.user.updateEntity, {
+      id: teacherId,
+      name: args.name,
+      email: args.email,
+      schoolId: args.schoolId,
+      phone: args.phone,
+      bio: args.bio,
+      gender: args.gender,
+      qualifications: args.qualifications,
+      image: args.image,
+    });
+
+    // Handle class teacher assignments
+    if (isClassTeacher && classAssigned && classAssigned.length > 0) {
+      // First, remove existing class teacher assignments
+      const existingAssignments = await ctx.runQuery(
+        internal.queries.teacher.getTeacherClasses,
+        {
+          teacherId,
+        },
+      );
+
+      if (existingAssignments && existingAssignments.length > 0) {
+        await Promise.all(
+          existingAssignments.map(
+            async (assignment: { _id: Id<"classTeacher"> }) => {
+              await ctx.runMutation(
+                internal.mutations.teacher.removeClassTeacher,
+                {
+                  id: assignment._id,
+                },
+              );
+            },
+          ),
+        );
+      }
+
+      // Then, add new class teacher assignments
+      await Promise.all(
+        classAssigned.map(async (classId) => {
+          await ctx.runMutation(internal.mutations.teacher.addClassTeacher, {
+            classId,
+            teacherId,
+            schoolId,
+          });
+        }),
+      );
+    } else if (!isClassTeacher) {
+      // If not a class teacher anymore, remove all class assignments
+      const existingAssignments = await ctx.runQuery(
+        internal.queries.teacher.getTeacherClasses,
+        {
+          teacherId,
+        },
+      );
+
+      if (existingAssignments && existingAssignments.length > 0) {
+        await Promise.all(
+          existingAssignments.map(async (assignment) => {
+            await ctx.runMutation(
+              internal.mutations.teacher.removeClassTeacher,
+              {
+                id: assignment._id,
+              },
+            );
+          }),
+        );
+      }
+    }
+
+    // Handle subject assignments
+    if (subjects && subjects.length > 0) {
+      // Update subject assignments
+      await Promise.all(
+        subjects.map(async (subject) => {
+          await ctx.runMutation(
+            internal.mutations.teacher.UpdateteacherSubjectClass,
+            {
+              teacherId,
+              classId: subject.classes,
+              subjectId: subject.subject,
+            },
+          );
+        }),
+      );
+    }
+
+    return { success: true };
+  },
+});
+
+// Remove a class teacher assignment
+export const removeClassTeacher = internalMutation({
+  args: {
+    id: v.id("classTeacher"),
+  },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.delete(id);
+  },
+});
+
+// Get teacher's class assignments
+export const getTeacherClasses = internalMutation({
+  args: {
+    teacherId: v.id("users"),
+  },
+  handler: async (ctx, { teacherId }) => {
+    return await ctx.db
+      .query("classTeacher")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", teacherId))
+      .collect();
+  },
+});
+
+// Delete a teacher
+export const deleteTeacher = action({
+  args: {
+    teacherId: v.id("users"),
+  },
+  handler: async (ctx, { teacherId }) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Verify that the teacher exists
+    const teacher = await ctx.runQuery(internal.queries.user.getUser, {
+      userId: teacherId,
+    });
+
+    if (!teacher) {
+      throw new Error("Teacher not found");
+    }
+
+    // Remove class teacher assignments
+    const classAssignments = await ctx.runQuery(
+      internal.queries.teacher.getTeacherClasses,
+      {
+        teacherId,
+      },
+    );
+
+    if (classAssignments && classAssignments.length > 0) {
+      await Promise.all(
+        classAssignments.map(async (assignment) => {
+          await ctx.runMutation(internal.mutations.teacher.removeClassTeacher, {
+            id: assignment._id,
+          });
+        }),
+      );
+    }
+
+    // Remove subject teacher assignments
+    const subjectAssignments = await ctx.runQuery(
+      internal.queries.teacher.getTeacherSubjects,
+      {
+        teacherId,
+      },
+    );
+
+    if (subjectAssignments && subjectAssignments.length > 0) {
+      await Promise.all(
+        subjectAssignments.map(async (assignment) => {
+          // Either remove the teacher from the subject or delete the relationship
+          await ctx.runMutation(
+            internal.mutations.teacher.updateteachersubject,
+            {
+              assignmentId: assignment._id,
+            },
+          );
+        }),
+      );
+    }
+
+    // Delete the teacher account
+    await ctx.runMutation(internal.mutations.user.deleteEntity, {
+      id: teacherId,
+    });
 
     return { success: true };
   },

@@ -7,6 +7,7 @@ import {
     CardHeader,
 } from "@/components/ui/card"
 import { Student } from '../../types'
+import StudentActions from './shared/student-actions'
 
 interface StudentCardProps {
     student: Student
@@ -48,13 +49,7 @@ export function StudentCard({ student }: StudentCardProps) {
                     </div>
                 </div>
                 <div className="mt-4 flex justify-end">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-[#2E8B57] hover:text-[#2E8B57]/90"
-                    >
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                    <StudentActions student={student} />
                 </div>
             </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import { internalMutation, mutation } from "../_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 // create a subject
 export const createSubject = mutation({
   args: {
@@ -30,6 +31,7 @@ export const createSubject = mutation({
       schoolId: args.schoolId,
       isCore: args.isCore,
       isActive: true,
+      searchableText: `${args.name} ${args.description} ${args.category}`,
     });
 
     if (args?.classes && args?.classes.length > 0) {
@@ -54,19 +56,100 @@ export const updateSubject = mutation({
     subjectId: v.id("subjects"),
     name: v.string(),
     description: v.optional(v.string()),
+    category: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
+    isCore: v.boolean(),
+    schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
     const subject = await ctx.db.get(args.subjectId);
-    if (!subject) {
+    if (!subject || subject.schoolId !== args.schoolId) {
       throw new Error("Subject not found");
     }
 
     await ctx.db.patch(args.subjectId, {
+      category: args.category,
+      isCore: args.isCore,
+      searchableText: `${args.name} ${args.description} ${args.category}`,
       name: args.name,
       ...(args.description && { description: args.description }),
       ...(args.isActive !== undefined && { isActive: args.isActive }),
     });
+  },
+});
+
+// delete subject teachers
+export const deleteSubjectTeachers = mutation({
+  args: {
+    subjectId: v.id("subjects"),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const subject = await ctx.db.get(args.subjectId);
+    if (!subject || subject.schoolId !== args.schoolId) {
+      throw new Error("Subject not found");
+    }
+
+    // delete all relations of the subject
+    const relations = await ctx.db
+      .query("subjectTeachers")
+      .filter((q) => q.eq(q.field("subjectId"), args.subjectId))
+      .collect();
+
+    return await Promise.all(
+      relations.map(async (relation) => {
+        return await ctx.db.delete(relation._id);
+      }),
+    );
+  },
+});
+
+// delete a subject and all its relations
+export const deleteSubject = mutation({
+  args: {
+    subjectId: v.id("subjects"),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const subject = await ctx.db.get(args.subjectId);
+    if (!subject || subject.schoolId !== args.schoolId) {
+      throw new Error("Subject not found");
+    }
+
+    await ctx.db.delete(args.subjectId);
+
+    // Start batch deletion process
+    await ctx.scheduler.runAfter(
+      0,
+      api.mutations.subject.deleteSubjectTeachers,
+      {
+        subjectId: args.subjectId,
+        schoolId: args.schoolId,
+      },
+    );
+
+    return { success: true };
   },
 });
 
@@ -89,6 +172,32 @@ export const createSTC = internalMutation({
       subjectId: args.subjectId,
       schoolId: args.schoolId,
     });
+  },
+});
+
+// delete subject class and teacher conjunction
+export const deleteSTC = internalMutation({
+  args: {
+    id: v.id("subjectTeachers"),
+    classId: v.id("classes"),
+    subjectId: v.id("subjects"),
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    //  verify the classId belongs to the school
+    const schoolclass = await ctx.db.get(args.classId);
+    if (!schoolclass || schoolclass.schoolId !== args.schoolId) {
+      throw new Error("Invalid class");
+    }
+
+    return await ctx.db.delete(args.id);
   },
 });
 

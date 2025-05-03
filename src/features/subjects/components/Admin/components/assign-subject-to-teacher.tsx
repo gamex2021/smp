@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { api } from "~/_generated/api"
 import { type Id } from "~/_generated/dataModel"
 import { useDomain } from "@/context/DomainContext"
-import { useMutation, useQuery } from "convex/react"
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -47,13 +47,12 @@ export default function AssignSubjectToTeacher({ subjectId }: Props) {
     })
 
     // Get teachers for the school with cursor-based pagination
-    const teachersQuery = useQuery(api.queries.teacher.getTeachersWithPagination, {
-        search: search || undefined,
-        domain,
-        numItems: TEACHERS_PER_PAGE,
-    })
 
-    console.log("the teachers", teachersQuery?.teachers, subjectTeachersClasses)
+    const {
+        results: teachers,
+        status,
+        loadMore,
+    } = usePaginatedQuery(api.queries.teacher.getTeachersWithPagination, domain ? { domain, search } : "skip", { initialNumItems: 12 })
 
     // Mutation to assign a teacher
     const assignTeacherToClassSubject = useMutation(api.mutations.subject.UpdateSubjectClassTeachers)
@@ -98,6 +97,7 @@ export default function AssignSubjectToTeacher({ subjectId }: Props) {
                             <FormControl>
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-medium">Select Class</h3>
+                                    <p className="text-xs">These are all the classes that this subject has been assigned to, assign a teacher to each of the class</p>
                                     <div className="grid gap-2 sm:grid-cols-2 ">
                                         {subjectTeachersClasses?.map((stc) => (
                                             <Card
@@ -141,7 +141,7 @@ export default function AssignSubjectToTeacher({ subjectId }: Props) {
                                         <h3 className="text-sm font-medium">Select Teacher</h3>
                                         <ScrollArea className="h-[300px]">
                                             <div className="grid gap-2">
-                                                {teachersQuery?.teachers.map((teacher) => (
+                                                {teachers.map((teacher) => (
                                                     <Card
                                                         key={teacher._id}
                                                         className={cn(
@@ -170,6 +170,14 @@ export default function AssignSubjectToTeacher({ subjectId }: Props) {
                                                 ))}
                                             </div>
                                         </ScrollArea>
+                                        {/* load more teacher */}
+                                        {status === "CanLoadMore" && (
+                                            <div className="mt-8 flex justify-center">
+                                                <Button role="button" aria-label='Load more teachers' onClick={() => loadMore(12)} variant="outline" className="px-8">
+                                                    Load More
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </FormControl>
                                 <FormMessage />

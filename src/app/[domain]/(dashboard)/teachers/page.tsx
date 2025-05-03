@@ -1,5 +1,4 @@
 
-import { mockTeachers } from '@/app/config/siteConfig'
 import { RoleProtected } from '@/components/providers/role-protected'
 import { TableSkeleton } from '@/features/students/components/Admin/table-skeleton'
 import { TeachersContent } from '@/features/teachers/components/teachers-content'

@@ -2,10 +2,16 @@
 import { mockUser } from '@/app/config/siteConfig'
 import { RoleProtected } from '@/components/providers/role-protected'
 import { useQuery } from 'convex/react';
+import { usePathname } from 'next/navigation';
 import { api } from '~/_generated/api';
 
 
-export default function DashboardLayout(props: {
+export default function DashboardLayout({
+    admin,
+    student,
+    teacher,
+    children,
+}: {
     admin: React.ReactNode
     student: React.ReactNode
     teacher: React.ReactNode
@@ -13,13 +19,23 @@ export default function DashboardLayout(props: {
 }) {
     // GET THE USER USING THE QUERY CONVEX OPTION
     const user = useQuery(api.queries.user.currentUser);
+    const pathname = usePathname();
+
+    // 👀 detect if we’re on a dynamic sub-route like /dashboard/123
+    const isDetailRoute = pathname?.split("/").length > 2;
 
     // for the subjects route, all the roles have that route
     return (
         <RoleProtected allowedRoles={['ADMIN', 'TEACHER', 'STUDENT']}>
-            {user?.role === "ADMIN" && props.admin}
-            {user?.role === "STUDENT" && props.student}
-            {user?.role === "TEACHER" && props.teacher}
+            {isDetailRoute ? (
+                children
+            ) : user?.role === "ADMIN" ? (
+                admin
+            ) : user?.role === "TEACHER" ? (
+                teacher
+            ) : user?.role === "STUDENT" && (
+                student
+            )}
         </RoleProtected>
     )
 }

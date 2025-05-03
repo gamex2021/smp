@@ -13,9 +13,7 @@ export const findSchool = query({
 
     return {
       id: school._id,
-      domain: school.domain,
-      verified: school.verified,
-      type: school.type,
+      ...school,
     };
   },
 });

@@ -1,4 +1,4 @@
-import { api } from "convex/_generated/api";
+import { api } from "~/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import { env } from "./env";
@@ -33,7 +33,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     searchParams.length > 0 ? `?${searchParams}` : ""
   }`;
   console.log(path);
-  console.log(searchParams);
+  console.log(searchParams);    
   if (hostname === "localhost:3000") {
     return NextResponse.next();
     // return NextResponse.rewrite(
@@ -41,9 +41,11 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     // );
   }
   // Uncomment and adjust the following block if you need to fetch school data
+  
   const schoolData = await fetchQuery(api.queries.school.findSchool, {
     domain: hostname,
   });
+  
   console.log(schoolData);
   if (!schoolData?.domain) {
     console.log("No school data found return 404 or something");

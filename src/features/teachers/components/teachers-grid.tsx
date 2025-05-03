@@ -5,7 +5,6 @@
 
 import { type Teacher } from '../types'
 import { TeacherCard } from './teachers-card'
-import { TeachersPagination } from './teachers-pagination'
 
 interface TeachersGridProps {
     teachers: Teacher[]
@@ -30,13 +29,13 @@ export function TeachersGrid({
                     <TeacherCard key={teacher._id} teacher={teacher} />
                 ))}
             </div>
-            <div className="flex justify-center">
+            {/* <div className="flex justify-center">
                 <TeachersPagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(teachers.length / teachersPerPage)}
                     onPageChange={onPageChange}
                 />
-            </div>
+            </div> */}
         </div>
     )
 }

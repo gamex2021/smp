@@ -54,6 +54,12 @@ export const mockNavItems = [
     roles: ["ADMIN", "TEACHER", "STUDENT"],
   },
   {
+    title: "Learn",
+    href: "/learn",
+    icon: "BookAIcon",
+    roles: ["STUDENT"],
+  },
+  {
     title: "Messages",
     href: "/messages",
     icon: "MessageSquare",

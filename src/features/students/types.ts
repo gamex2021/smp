@@ -17,6 +17,7 @@ export interface Student {
     | null;
   email: string;
   gender?: string;
+  bio?: string;
   phone?: string;
   address?: string;
   guardianPhone?: string;
