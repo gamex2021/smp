@@ -16,6 +16,9 @@ export function RoleProtected({
     const user = useQuery(api.queries.user.currentUser);
     // check if the allowed roles include the current user role
     const hasRole = user?.role ? allowedRoles.includes(user.role) : false
+    
+
+    console.log("has role", hasRole, user)
 
     if (user && !hasRole) {
         notFound();

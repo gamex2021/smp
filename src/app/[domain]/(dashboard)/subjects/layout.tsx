@@ -24,7 +24,8 @@ export default function DashboardLayout({
     // 👀 detect if we’re on a dynamic sub-route like /dashboard/123
     const isDetailRoute = pathname?.split("/").length > 2;
 
-    // for the subjects route, all the roles have that route
+    console.log("is it", isDetailRoute)
+
     return (
         <RoleProtected allowedRoles={['ADMIN', 'TEACHER', 'STUDENT']}>
             {isDetailRoute ? (
