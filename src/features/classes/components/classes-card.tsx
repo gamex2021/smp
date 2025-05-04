@@ -1,15 +1,18 @@
 "use client"
 
 import { Briefcase, ChevronRight } from 'lucide-react'
+import { type Classes } from '../types'
+import ClassActions from '../shared/class-actions'
 
 interface ClassCardProps {
     name: string
     teacher: string
     students: number
     onClick?: () => void
+    classItem : Classes
 }
 
-export function ClassCard({ name, teacher, students, onClick }: ClassCardProps) {
+export function ClassCard({ name, teacher, students, onClick, classItem }: ClassCardProps) {
     return (
         <div
             onClick={onClick}
@@ -31,7 +34,8 @@ export function ClassCard({ name, teacher, students, onClick }: ClassCardProps) 
                             <p className="text-sm text-white/75">{students} Students</p>
                         </div>
                         <div className='px-2 py-2 bg-[#FFFFFF] rounded-[6.65px]'>
-                            <ChevronRight className="h-5 w-5 text-[#2E8B57]" />
+                            {/* <ChevronRight className="h-5 w-5 text-[#2E8B57]" /> */}
+                            <ClassActions classItem={classItem}/>
                         </div>
                     </div>
                 </div>

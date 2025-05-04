@@ -1,5 +1,8 @@
 /* eslint-disable react/display-name */
 /* eslint-disable import/no-anonymous-default-export */
+
+import LandingPage from "@/features/school-page"
+
 /* eslint-disable @typescript-eslint/await-thenable */
 interface Props {
   params: {
@@ -8,5 +11,7 @@ interface Props {
 }
 export default async function ({ params }: Props) {
   const domain = (await params).domain
-  return <div>load data for {domain}</div>
+  return <div>
+    <LandingPage domain={domain} />
+  </div>
 }

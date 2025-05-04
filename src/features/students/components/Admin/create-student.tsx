@@ -17,7 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { useDomain } from "@/context/DomainContext"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useAction, useMutation, useQuery } from "convex/react"
+import { useAction, useMutation, usePaginatedQuery, useQuery } from "convex/react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { TbLoader3 } from "react-icons/tb"
@@ -90,10 +90,18 @@ function CreateStudentForm({ onClose }: { onClose: () => void }) {
     // used to upload media to convex storage
     const generateUploadUrl = useMutation(api.mutations.user.generateUploadUrl);
 
-    // get the classes in the school
-    const classesQuery = useQuery(api.queries.class.getClassesData, {
-        domain,
-    });
+   // TODO: to search for a class, this should be done later , in the form
+     const [classesSearch, setClassesSearch] = useState("");
+     // get the classes in the school
+     const {
+       results: classes,
+       status,
+       loadMore,
+     } = usePaginatedQuery(
+       api.queries.class.getClassesData,
+       domain ? { domain, search: classesSearch } : "skip",
+       { initialNumItems: 12 },
+     );
     // convex auth
     const { signIn } = useAuthActions();
 
@@ -362,7 +370,7 @@ function CreateStudentForm({ onClose }: { onClose: () => void }) {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {classesQuery?.map((c) => (
+                                    {classes?.map((c) => (
                                         <SelectItem key={c._id} value={c._id}>
                                             {c.title}
                                         </SelectItem>

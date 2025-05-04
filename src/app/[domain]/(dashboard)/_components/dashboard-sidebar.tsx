@@ -24,6 +24,7 @@ import {
     Banknote,
     Settings,
     BookAIcon,
+    IdCardIcon
 } from 'lucide-react'
 import { RxDashboard } from 'react-icons/rx'
 import Link from 'next/link'
@@ -46,6 +47,7 @@ const icons = {
     Banknote,
     Settings,
     BookAIcon,
+    IdCardIcon
 }
 
 export function DashboardSidebar() {

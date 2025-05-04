@@ -72,6 +72,12 @@ export const mockNavItems = [
     roles: ["ADMIN"],
   },
   {
+    title : "Marketing",
+    href : "/marketing",
+    icon: "IdCardIcon",
+    roles : ["ADMIN"]
+  },
+  {
     title: "Settings",
     href: "/settings",
     icon: "Settings",

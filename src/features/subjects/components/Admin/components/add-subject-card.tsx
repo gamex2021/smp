@@ -27,7 +27,7 @@ import {
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch"
 import { type Id } from '~/_generated/dataModel';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import { api } from "~/_generated/api"
 import { TbLoader3 } from 'react-icons/tb';
 import { useDomain } from '@/context/DomainContext';
@@ -95,9 +95,18 @@ export function AddSubjectCard() {
     const [loader, setLoader] = useState<boolean>(false);
     const { domain } = useDomain()
     // get the classes in the school
-    const classesQuery = useQuery(api.queries.class.getClassesData, {
-        domain,
-    });
+    // TODO: to search for a class, this should be done later , in the form
+      const [classesSearch, setClassesSearch] = useState("");
+      // get the classes in the school
+      const {
+        results: classes,
+        status,
+        loadMore,
+      } = usePaginatedQuery(
+        api.queries.class.getClassesData,
+        domain ? { domain, search: classesSearch } : "skip",
+        { initialNumItems: 12 },
+      );
     // get the schoolInfo which includes the id,
     const schoolInfo = useQuery(api.queries.school.findSchool, {
         domain,
@@ -205,7 +214,7 @@ export function AddSubjectCard() {
                             <FormControl>
                                 <MultiSelect
                                     selected={field.value}
-                                    options={Array.isArray(classesQuery) ? classesQuery.map((c: { title: string; _id: Id<"classes"> }) => ({ label: c.title, value: c._id })) : []}
+                                    options={Array.isArray(classes) ? classes.map((c: { title: string; _id: Id<"classes"> }) => ({ label: c.title, value: c._id })) : []}
                                     onChange={(values) => field.onChange(values)}
                                     placeholder="Select classes"
                                 />

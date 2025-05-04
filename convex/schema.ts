@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
+import { metadata } from '../src/app/[domain]/(dashboard)/learn/tools/questions/page';
 
 export default defineSchema({
   // Include authentication tables from @convex-dev/auth
@@ -76,6 +77,134 @@ export default defineSchema({
     address: v.id("addresses"),
     user: v.optional(v.id("users")), // Reference to the user who created/manages the school
   }).index("by_domain", ["domain"]),
+
+
+
+  // Landing Page Configuration
+  landingPageConfig: defineTable({
+    schoolId: v.id("schools"),
+    theme: v.object({
+      primaryColor: v.optional(v.string()),
+      secondaryColor: v.optional(v.string()),
+      accentColor: v.optional(v.string()),
+      fontFamily: v.optional(v.string()),
+      darkMode: v.optional(v.boolean()),
+      buttonStyle: v.optional(v.union(v.literal("rounded"), v.literal("pill"), v.literal("square"))),
+    }),
+    logo: v.optional(v.id("_storage")),
+    customCss: v.optional(v.string()),
+    customJs: v.optional(v.string()),
+    metaData: v.object({
+      title: v.string(),
+      description: v.string(),
+      keywords: v.array(v.string()),
+      ogImage: v.optional(v.id("_storage")),
+    }),
+    isActive: v.boolean(),
+    lastUpdated: v.number(),
+  }).index("by_school", ["schoolId"]),
+
+  // Landing Page Sections
+  landingPageSections: defineTable({
+    schoolId: v.id("schools"),
+    type: v.union(
+      v.literal("hero"),
+      v.literal("about"),
+      v.literal("features"),
+      v.literal("testimonials"),
+      v.literal("stats"),
+      v.literal("cta"),
+      v.literal("contact"),
+      v.literal("gallery"),
+      v.literal("team"),
+      v.literal("faq"),
+      v.literal("admissions"),
+      v.literal("custom")
+    ),
+    title: v.string(),
+    subtitle: v.optional(v.string()),
+    content: v.optional(v.string()),
+    order: v.number(),
+    isActive: v.boolean(),
+    backgroundType: v.union(
+      v.literal("color"),
+      v.literal("gradient"),
+      v.literal("image")
+    ),
+    backgroundColor: v.optional(v.string()),
+    backgroundImage: v.optional(v.id("_storage")),
+    backgroundGradient: v.optional(v.object({
+      direction: v.string(),
+      from: v.string(),
+      to: v.string()
+    })),
+    media: v.optional(v.array(v.object({
+      type: v.union(v.literal("image"), v.literal("video")),
+      file: v.id("_storage"),
+      alt: v.optional(v.string())
+    }))),
+    ctaButtons: v.optional(v.array(v.object({
+      text: v.string(),
+      link: v.string(),
+      style: v.union(
+        v.literal("primary"),
+        v.literal("secondary"),
+        v.literal("outline"),
+        v.literal("ghost")
+      ),
+      icon: v.optional(v.string())
+    }))),
+    lastUpdated: v.number(),
+    customFields: v.optional(v.record(v.string(), v.string())),
+    animation: v.optional(v.string()),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_school_and_type", ["schoolId", "type"])
+    .index("by_school_and_order", ["schoolId", "order"]),
+
+  // Testimonials
+  testimonials: defineTable({
+    schoolId: v.id("schools"),
+    name: v.string(),
+    role: v.string(),
+    content: v.string(),
+    avatar: v.optional(v.id("_storage")),
+    rating: v.optional(v.number()),
+    isActive: v.boolean(),
+    order: v.number()
+  }).index("by_school", ["schoolId"]),
+
+  // FAQ Items
+  faqItems: defineTable({
+    schoolId: v.id("schools"),
+    question: v.string(),
+    answer: v.string(),
+    category: v.optional(v.string()),
+    isActive: v.boolean(),
+    order: v.number()
+  }).index("by_school", ["schoolId"]),
+
+  // Contact Form Submissions
+  contactSubmissions: defineTable({
+    schoolId: v.id("schools"),
+    name: v.string(),
+    email: v.string(),
+    phone: v.optional(v.string()),
+    message: v.string(),
+    type: v.union(
+      v.literal("general"),
+      v.literal("admission"),
+      v.literal("support"),
+      v.literal("other")
+    ),
+    status: v.union(
+      v.literal("new"),
+      v.literal("inProgress"),
+      v.literal("completed"),
+      v.literal("archived")
+    ),
+    createdAt: v.string()
+  }).index("by_school", ["schoolId"]),
 
   // create workspace table
   workspace: defineTable({
@@ -165,29 +294,44 @@ export default defineSchema({
     schoolId: v.id("schools"),
     isActive: v.optional(v.boolean()),
     capacity: v.optional(v.number()),
-  }).index("by_schoolId", ["schoolId"]),
+    searchableText : v.optional(v.string())
+  }).index("by_schoolId", ["schoolId"])
+  .searchIndex("search_user", {
+    searchField: "searchableText",
+    filterFields: ["schoolId"],
+  }),
 
   // ClassTeacher junction table: Links teachers to their assigned classes
   classTeacher: defineTable({
     classId: v.optional(v.id("classes")),
     teacherId: v.id("users"),
     schoolId: v.id("schools"),
+    searchableText : v.optional(v.string())
   })
     .index("by_school", ["schoolId"])
     .index("by_teacher", ["teacherId"])
     .index("by_class", ["classId"])
-    .index("by_class_teacher", ["classId", "teacherId"]),
+    .index("by_class_teacher", ["classId", "teacherId"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["schoolId"],
+    }),
 
   // ClassStudent junction table: Links students to their enrolled classes
   classStudent: defineTable({
     classId: v.id("classes"),
     studentId: v.id("users"),
     schoolId: v.id("schools"),
+    searchableText : v.optional(v.string())
   })
     .index("by_school", ["schoolId"])
     .index("by_student", ["studentId"])
     .index("by_class", ["classId"])
-    .index("by_class_student", ["classId", "studentId"]),
+    .index("by_class_student", ["classId", "studentId"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["schoolId"],
+    }),
 
   // Subjects table: Stores information about individual subjects
   subjects: defineTable({

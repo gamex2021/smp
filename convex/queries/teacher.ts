@@ -195,6 +195,27 @@ export const getTeacherClasses = internalQuery({
   },
 });
 
+// get class teacher assignment by the classId 
+export const getClassesTeacher = internalQuery({
+  args: {
+    classId: v.id("classes"),
+  },
+  handler: async (ctx, { classId }) => {
+    // verifying that the person making the request is an admin and is logged in
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    return await ctx.db
+      .query("classTeacher")
+      .withIndex("by_class", (q) => q.eq("classId", classId))
+      .collect();
+  },
+});
+
+
 // get all teacher subjects
 export const getTeacherSubjects = internalQuery({
   args: {
