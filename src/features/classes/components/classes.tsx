@@ -21,14 +21,15 @@ export function Classes({ domain, classId }: Props) {
   return (
     <div>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {groups?.map((classItem) => (
+        {/* {groups?.map((classItem) => (
           <ClassCard
+            classItem={classItem}
             key={classItem._id}
             name={classItem.title}
             teacher={"Mrs David"}
             students={10}
           />
-        ))}
+        ))} */}
         <CreateClassGroup classId={classId} />
       </div>
     </div>

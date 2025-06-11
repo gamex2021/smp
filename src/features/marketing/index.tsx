@@ -165,9 +165,9 @@ export default function LandingPageCustomization() {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="space-y-4"
+        className="space-y-4 my-4"
       >
-        <TabsList className="grid grid-cols-3 gap-2 md:grid-cols-7">
+        <TabsList className="flex my-4 space-x-2 justify-around flex-wrap items-center">
           <TabsTrigger
             value="general"
             className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white"

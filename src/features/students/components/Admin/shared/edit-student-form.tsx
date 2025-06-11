@@ -80,6 +80,8 @@ export default function EditStudentForm({
   const [loading, setLoading] = useState<boolean>(false);
   const { domain } = useDomain();
 
+  // console.log("this is the student", student);
+
   // Get school info
   const schoolInfo = useQuery(api.queries.school.findSchool, { domain });
 

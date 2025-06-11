@@ -81,6 +81,7 @@ export function usePayments(schoolId: Id<"schools">) {
   // Actions
   const handleCreatePayment = async (paymentData: PaymentDataType) => {
     try {
+      console.log("the paymentData", paymentData)
       const result = await createPayment(paymentData);
       toast.success("Payment recorded successfully");
       return result;

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { api, internal } from "../_generated/api";
 import { internalMutation, mutation } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkAdmin } from "./helpers";
 // create a subject
 export const createSubject = mutation({
   args: {
@@ -13,6 +14,7 @@ export const createSubject = mutation({
     isCore: v.boolean(),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // check if the name exist, subject names must be unique
     const findSubject = await ctx.db
       .query("subjects")
@@ -62,6 +64,7 @@ export const updateSubject = mutation({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // verifying that the person making the request is an admin and is logged in
     const userId = await getAuthUserId(ctx);
 
@@ -92,6 +95,7 @@ export const deleteSubjectTeachers = mutation({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // verifying that the person making the request is an admin and is logged in
     const userId = await getAuthUserId(ctx);
 
@@ -125,6 +129,7 @@ export const deleteSubject = mutation({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // verifying that the person making the request is an admin and is logged in
     const userId = await getAuthUserId(ctx);
 
@@ -161,6 +166,7 @@ export const createSTC = internalMutation({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     //  verify the classId belongs to the school
     const schoolclass = await ctx.db.get(args.classId);
     if (!schoolclass || schoolclass.schoolId !== args.schoolId) {
@@ -184,6 +190,7 @@ export const deleteSTC = internalMutation({
     schoolId: v.id("schools"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // verifying that the person making the request is an admin and is logged in
     const userId = await getAuthUserId(ctx);
 
@@ -209,6 +216,7 @@ export const UpdateSubjectClassTeachers = mutation({
     subjectId: v.id("subjects"),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     const { teacherId, subjectId, classId } = args;
 
     // Check if the relationship already exists

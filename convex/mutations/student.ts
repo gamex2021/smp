@@ -7,6 +7,7 @@ import { api, internal } from "../_generated/api";
 import { action, internalMutation } from "../_generated/server";
 import { Resend as ResendAPI } from "resend";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { Id } from "../_generated/dataModel";
 
 const resend_api = process.env.AUTH_RESEND_KEY;
 
@@ -42,6 +43,7 @@ export const addClassStudent = internalMutation({
   },
 });
 
+// *CREATE STUDENT* - This mutation creates a new student in the system for a school
 export const createStudent = action({
   args: {
     name: v.string(),
@@ -56,7 +58,7 @@ export const createStudent = action({
     address: v.string(),
     schoolId: v.id("schools"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ studentId: Id<"users"> }> => {
     const userId = await getAuthUserId(ctx);
 
     if (!userId) {
@@ -91,6 +93,8 @@ export const createStudent = action({
         studentId,
         schoolId: args.schoolId,
       });
+
+      // TODO : get the current class fee structure and add outstanding payments for the student
     }
 
     /*    then find a way to send the user, and the password to the teacher, also we will need a functionality so that as soon as they log in the first time
@@ -115,7 +119,7 @@ export const createStudent = action({
       console.error("This is the error", error);
     }
 
-    return { success: true };
+    return { studentId };
   },
 });
 
@@ -185,10 +189,13 @@ export const updateStudent = action({
         },
       );
 
-      // remove the student from the class
-      await ctx.runMutation(internal.mutations.student.removeClassStudent, {
-        id: classStudent._id,
-      });
+      if (classStudent) {
+        // remove the student from the class if the student is already in a class
+        await ctx.runMutation(internal.mutations.student.removeClassStudent, {
+          id: classStudent._id,
+        });
+      }
+
       // add the student to the new class
       await ctx.runMutation(internal.mutations.student.addClassStudent, {
         classId: args.currentClass,

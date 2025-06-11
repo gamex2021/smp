@@ -1,7 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
-import { metadata } from '../src/app/[domain]/(dashboard)/learn/tools/questions/page';
+import { metadata } from "../src/app/[domain]/(dashboard)/learn/tools/questions/page";
+import RecentActivity from "../src/features/learn/components/recent-activity";
 
 export default defineSchema({
   // Include authentication tables from @convex-dev/auth
@@ -78,8 +79,6 @@ export default defineSchema({
     user: v.optional(v.id("users")), // Reference to the user who created/manages the school
   }).index("by_domain", ["domain"]),
 
-
-
   // Landing Page Configuration
   landingPageConfig: defineTable({
     schoolId: v.id("schools"),
@@ -89,7 +88,9 @@ export default defineSchema({
       accentColor: v.optional(v.string()),
       fontFamily: v.optional(v.string()),
       darkMode: v.optional(v.boolean()),
-      buttonStyle: v.optional(v.union(v.literal("rounded"), v.literal("pill"), v.literal("square"))),
+      buttonStyle: v.optional(
+        v.union(v.literal("rounded"), v.literal("pill"), v.literal("square")),
+      ),
     }),
     logo: v.optional(v.id("_storage")),
     customCss: v.optional(v.string()),
@@ -119,7 +120,7 @@ export default defineSchema({
       v.literal("team"),
       v.literal("faq"),
       v.literal("admissions"),
-      v.literal("custom")
+      v.literal("custom"),
     ),
     title: v.string(),
     subtitle: v.optional(v.string()),
@@ -129,31 +130,41 @@ export default defineSchema({
     backgroundType: v.union(
       v.literal("color"),
       v.literal("gradient"),
-      v.literal("image")
+      v.literal("image"),
     ),
     backgroundColor: v.optional(v.string()),
     backgroundImage: v.optional(v.id("_storage")),
-    backgroundGradient: v.optional(v.object({
-      direction: v.string(),
-      from: v.string(),
-      to: v.string()
-    })),
-    media: v.optional(v.array(v.object({
-      type: v.union(v.literal("image"), v.literal("video")),
-      file: v.id("_storage"),
-      alt: v.optional(v.string())
-    }))),
-    ctaButtons: v.optional(v.array(v.object({
-      text: v.string(),
-      link: v.string(),
-      style: v.union(
-        v.literal("primary"),
-        v.literal("secondary"),
-        v.literal("outline"),
-        v.literal("ghost")
+    backgroundGradient: v.optional(
+      v.object({
+        direction: v.string(),
+        from: v.string(),
+        to: v.string(),
+      }),
+    ),
+    media: v.optional(
+      v.array(
+        v.object({
+          type: v.union(v.literal("image"), v.literal("video")),
+          file: v.id("_storage"),
+          alt: v.optional(v.string()),
+        }),
       ),
-      icon: v.optional(v.string())
-    }))),
+    ),
+    ctaButtons: v.optional(
+      v.array(
+        v.object({
+          text: v.string(),
+          link: v.string(),
+          style: v.union(
+            v.literal("primary"),
+            v.literal("secondary"),
+            v.literal("outline"),
+            v.literal("ghost"),
+          ),
+          icon: v.optional(v.string()),
+        }),
+      ),
+    ),
     lastUpdated: v.number(),
     customFields: v.optional(v.record(v.string(), v.string())),
     animation: v.optional(v.string()),
@@ -171,7 +182,7 @@ export default defineSchema({
     avatar: v.optional(v.id("_storage")),
     rating: v.optional(v.number()),
     isActive: v.boolean(),
-    order: v.number()
+    order: v.number(),
   }).index("by_school", ["schoolId"]),
 
   // FAQ Items
@@ -181,7 +192,7 @@ export default defineSchema({
     answer: v.string(),
     category: v.optional(v.string()),
     isActive: v.boolean(),
-    order: v.number()
+    order: v.number(),
   }).index("by_school", ["schoolId"]),
 
   // Contact Form Submissions
@@ -195,15 +206,15 @@ export default defineSchema({
       v.literal("general"),
       v.literal("admission"),
       v.literal("support"),
-      v.literal("other")
+      v.literal("other"),
     ),
     status: v.union(
       v.literal("new"),
       v.literal("inProgress"),
       v.literal("completed"),
-      v.literal("archived")
+      v.literal("archived"),
     ),
-    createdAt: v.string()
+    createdAt: v.string(),
   }).index("by_school", ["schoolId"]),
 
   // create workspace table
@@ -294,19 +305,20 @@ export default defineSchema({
     schoolId: v.id("schools"),
     isActive: v.optional(v.boolean()),
     capacity: v.optional(v.number()),
-    searchableText : v.optional(v.string())
-  }).index("by_schoolId", ["schoolId"])
-  .searchIndex("search_user", {
-    searchField: "searchableText",
-    filterFields: ["schoolId"],
-  }),
+    searchableText: v.optional(v.string()),
+  })
+    .index("by_schoolId", ["schoolId"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["schoolId"],
+    }),
 
   // ClassTeacher junction table: Links teachers to their assigned classes
   classTeacher: defineTable({
     classId: v.optional(v.id("classes")),
     teacherId: v.id("users"),
     schoolId: v.id("schools"),
-    searchableText : v.optional(v.string())
+    searchableText: v.optional(v.string()),
   })
     .index("by_school", ["schoolId"])
     .index("by_teacher", ["teacherId"])
@@ -322,7 +334,7 @@ export default defineSchema({
     classId: v.id("classes"),
     studentId: v.id("users"),
     schoolId: v.id("schools"),
-    searchableText : v.optional(v.string())
+    searchableText: v.optional(v.string()),
   })
     .index("by_school", ["schoolId"])
     .index("by_student", ["studentId"])
@@ -381,6 +393,68 @@ export default defineSchema({
     .index("by_class_and_subject", ["teacherId", "subjectId", "classId"])
     .index("by_subject_and_class", ["subjectId", "classId"]),
 
+  // classroom functionality
+  classRoom: defineTable({
+    teacherId: v.id("users"),
+    schoolId: v.id("schools"),
+    name: v.string(),
+    description: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("draft"),
+      v.literal("archived"),
+    ),
+    classroomCode: v.string(),
+    searchableText: v.optional(v.string()),
+    // Teacher-specific fields can be added here in the future
+  })
+    .index("by_status", ["status"])
+    .index("by_teacherId", ["teacherId"])
+    .index("by_teacherId__school_status", ["teacherId", "schoolId", "status"])
+    .searchIndex("search_user", {
+      searchField: "searchableText",
+      filterFields: ["teacherId"],
+    }),
+
+  // conjuction table for classroom and student
+  classRoomStudents: defineTable({
+    teacherId: v.id("users"),
+    schoolId: v.id("schools"),
+    classRoom: v.id("classRoom"),
+    studentId: v.id("users"),
+  })
+    .index("by_studentId_school", ["studentId", "schoolId"])
+    .index("by_classRoom_school", ["classRoom", "schoolId"])
+    .index("by_schoolId", ["schoolId"]),
+  // for the recent activity of the classroom or the subjectteachers
+
+  // The recent activity
+
+  spaceRecentActivity: defineTable({
+    type: v.union(
+      v.literal("assignment_completed"),
+      v.literal("assignment_graded"),
+      v.literal("workspace_created"),
+      v.literal("flashcard_session"),
+    ),
+    teacherId: v.optional(v.id("users")),
+    studentId: v.optional(v.id("users")),
+    status: v.union(
+      v.literal("student"),
+      v.literal("teacher"),
+      v.literal("all"),
+    ),
+    classRoom: v.optional(v.id("classRoom")),
+    subjectTeachers: v.optional(v.id("subjectTeachers")),
+    title: v.string(),
+    date: v.string(),
+    description: v.string(),
+  })
+    .index("by_teacherId", ["teacherId", "status"])
+    .index("by_subjectTeachers", ["subjectTeachers", "status"])
+    .index("by_classRoom", ["classRoom", "status"])
+    .index("by_studentId", ["studentId", "status"]),
+
   // =========================================================================
   // Academic Operations
   // =========================================================================
@@ -430,6 +504,12 @@ export default defineSchema({
     isActive: v.boolean(),
     autoTermProgression: v.boolean(),
     autoYearProgression: v.boolean(),
+    status: v.union(
+      v.literal("upcoming"),
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("archived"),
+    ),
     currentTerm: v.object({
       termNumber: v.number(),
       name: v.string(),
@@ -454,16 +534,17 @@ export default defineSchema({
         ),
       }),
     ),
-    nextYearConfig: v.optional(
-      v.object({
-        academicYear: v.string(),
-        startDate: v.string(),
-        endDate: v.string(),
-      }),
-    ),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    createdBy: v.id("users"),
+    updatedBy: v.optional(v.id("users")),
+    description: v.optional(v.string()),
+    metadata: v.optional(v.record(v.string(), v.string())), // For any additional custom fields
   })
     .index("by_school", ["schoolId"])
-    .index("by_school_year", ["schoolId", "academicYear"]),
+    .index("by_school_and_status", ["schoolId", "status"])
+    .index("by_school_year", ["schoolId", "academicYear"])
+    .index("active_years", ["schoolId", "isActive"]),
 
   // Class Fee Structure
   classFeeStructure: defineTable({
@@ -484,7 +565,7 @@ export default defineSchema({
           v.object({
             minimumFirstPayment: v.number(),
             maximumInstallments: v.number(),
-            installmentDueDates: v.array(v.string()),
+            installmentDueDates: v.optional(v.array(v.string())),
           }),
         ),
         reminderDays: v.array(v.number()),
@@ -532,6 +613,42 @@ export default defineSchema({
     .index("by_student", ["studentId"])
     .index("by_receipt", ["receiptNumber"])
     .index("by_class_term", ["classId", "academicYear", "termId"]),
+
+  // for the grading settings for a school
+  grading: defineTable({
+    schoolId: v.id("schools"),
+    classIds: v.array(v.id("classes")),
+    subjectIds: v.optional(v.array(v.id("subjects"))),
+    name: v.string(),
+    description: v.optional(v.string()),
+    components: v.array(
+      v.object({
+        key: v.string(),
+        name: v.string(),
+        active: v.boolean(),
+        maxPercentage: v.number(),
+        order: v.optional(v.number()),
+      }),
+    ),
+    gradeScale: v.array(
+      v.object({
+        grade: v.string(),
+        minScore: v.number(),
+        maxScore: v.number(),
+      }),
+    ),
+    isDefault: v.optional(v.boolean()),
+    status: v.optional(
+      v.union(v.literal("draft"), v.literal("active"), v.literal("archived")),
+    ), // "draft" | "active" | "archived"
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
+  })
+    .index("by_school", ["schoolId"])
+    .index("by_school_and_status", ["schoolId", "status"])
+    .index("by_school_and_default", ["schoolId", "isDefault"])
+    .index("by_classes", ["classIds"])
+    .index("by_subjects", ["subjectIds"]),
 
   // Outstanding Payments
   outstandingPayments: defineTable({

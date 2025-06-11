@@ -49,10 +49,11 @@ export const createPayment = mutation({
           .eq("academicYear", args.academicYear)
           .eq("termId", args.termId),
       )
-      .filter(
-        (q) =>
-          q.eq(q.field("studentId"), args.studentId) &&
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("studentId"), args.studentId),
           q.eq(q.field("feeId"), args.feeId),
+        ),
       )
       .first();
 

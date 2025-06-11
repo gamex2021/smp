@@ -23,6 +23,8 @@ export const getSchoolSubjects = query({
   },
 });
 
+//GET THE CLASS AND SUBJECT A TEACHER IS TEACHING BY THEIR TEACHERID
+
 // get class, subject and teachers relations, which is essentially just getting the class, subject and teacher relation
 export const getSTC = query({
   args: {
@@ -53,6 +55,49 @@ export const getSTC = query({
     );
 
     return subjects;
+  },
+});
+
+// get the stc by its id
+export const getSTCById = query({
+  args: {
+    subjectTeacherId: v.id("subjectTeachers"),
+    domain: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not found");
+    }
+    // this domain is essentially just for safety in this function, if the domain is not found then the subjectteachers schema cannot be queried
+    const school = await getSchoolByDomain(ctx, args.domain);
+
+    if (!school) {
+      return null;
+    }
+
+    //  verify the classId belongs to the school
+    const subjectClasses = await ctx.db.get(args.subjectTeacherId);
+
+    let subjectInfo = null;
+
+    if (subjectClasses) {
+      const [currentSubject, currentClass, currentTeacher] = await Promise.all([
+        ctx.db.get(subjectClasses.subjectId),
+        ctx.db.get(subjectClasses.classId),
+        subjectClasses.teacherId
+          ? ctx.db.get(subjectClasses.teacherId)
+          : Promise.resolve(null),
+      ]);
+
+      subjectInfo = {
+        currentSubject,
+        currentClass,
+        currentTeacher,
+      };
+    }
+
+    return subjectInfo;
   },
 });
 
@@ -142,6 +187,42 @@ export const getSchoolSubjectsWithPagination = query({
     return {
       ...paginationResult,
     };
+  },
+});
+
+// The subject list for a teacher ,
+export const subjectListForCurrentTeacher = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    // 1. Get the authenticated user's ID
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not found");
+    }
+    // 2. Paginate subjectTeachers by teacherId
+    const results = await ctx.db
+      .query("subjectTeachers")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", userId)) // Use the correct field for user ID
+      .paginate(args.paginationOpts);
+
+    // 3. Populate related class and subject documents
+    const classIds = results.page.map((st) => st.classId);
+    const subjectIds = results.page.map((st) => st.subjectId);
+
+    // Fetch all related classes and subjects in parallel
+    const [classes, subjects] = await Promise.all([
+      Promise.all(classIds.map((id) => ctx.db.get(id))),
+      Promise.all(subjectIds.map((id) => ctx.db.get(id))),
+    ]);
+
+    // 4. Attach populated data to each result
+    const page = results.page.map((st, i) => ({
+      ...st,
+      class: classes[i],
+      subject: subjects[i],
+    }));
+
+    return { ...results, page };
   },
 });
 

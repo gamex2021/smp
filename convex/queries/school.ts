@@ -1,6 +1,7 @@
 import { internalQuery, query } from "../_generated/server";
 import { v } from "convex/values";
 import { getSchoolByDomain } from "./helpers";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const findSchool = query({
   args: { domain: v.string() },
@@ -24,7 +25,13 @@ export const getSchoolProfile = query({
   handler: async (ctx, args) => {
     const school = await ctx.db.get(args.schoolId);
     if (!school) return null;
-    return school;
+
+    const newSchool = {
+      ...school,
+      address: school.address ? await ctx.db.get(school.address) : null,
+      logo: school.logo ? await ctx.storage.getUrl(school.logo) : undefined,
+    };
+    return newSchool;
   },
 });
 
@@ -51,6 +58,22 @@ export const getCurrentAcademicYear = query({
       .withIndex("by_school", (q) => q.eq("schoolId", args.schoolId))
       .filter((q) => q.eq(q.field("isActive"), true))
       .first();
+
+    return config;
+  },
+});
+
+// GET THE CURRENT TERM OF THE SELECTED ACADEMIC YEAR
+export const getAcademicConfigById = query({
+  args: { academicConfigId: v.id("academicConfig"), schoolId: v.id("schools") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const config = await ctx.db.get(args.academicConfigId);
 
     return config;
   },

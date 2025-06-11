@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { getSchoolByDomain } from "../queries/helpers";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkAdmin } from "./helpers";
 
 export const createSchool = mutation({
   args: {
@@ -61,7 +63,6 @@ export const updateSchoolProfile = mutation({
     motto: v.optional(v.string()),
     email: v.string(),
     phone: v.string(),
-    address: v.string(),
     type: v.union(
       v.literal("primary"),
       v.literal("secondary"),
@@ -76,6 +77,8 @@ export const updateSchoolProfile = mutation({
     logo: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // CHECK IF THE REQUESTING USER IS AN ADMIN
+    await checkAdmin(ctx);
     const school = await ctx.db.get(args.schoolId);
     if (!school) {
       throw new ConvexError("School not found");
@@ -156,6 +159,12 @@ export const configureAcademicYear = mutation({
     }
 
     // Create new academic year configuration
+    const userId = await getAuthUserId(ctx); // Ensure the user is authenticated
+
+    if (!userId) {
+      throw new ConvexError("User does not exist");
+    }
+
     const configId = await ctx.db.insert("academicConfig", {
       schoolId: args.schoolId,
       academicYear: args.academicYear,
@@ -173,6 +182,10 @@ export const configureAcademicYear = mutation({
         endDate: args.endDate,
         termNumber: 1,
       }, // Default value for currentTerm
+      status: "upcoming", // Default status
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: userId,
     });
 
     return { configId };
@@ -306,6 +319,50 @@ export const deleteTerm = mutation({
 
     await ctx.db.patch(args.academicConfigId, {
       terms: updatedTerms,
+    });
+
+    return { success: true };
+  },
+});
+
+export const updateSchoolLogo = mutation({
+  args: {
+    schoolId: v.id("schools"),
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const { schoolId, storageId } = args;
+
+    // Update the school's logo
+    await ctx.db.patch(schoolId, {
+      logo: storageId,
+    });
+
+    return { success: true };
+  },
+});
+
+export const updateSchoolAddress = mutation({
+  args: {
+    schoolId: v.id("schools"),
+    address: v.object({
+      line1: v.string(),
+      line2: v.optional(v.string()),
+      city: v.string(),
+      state: v.string(),
+      postal_code: v.string(),
+      country: v.string(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const { schoolId, address } = args;
+
+    // Create new address
+    const addressId = await ctx.db.insert("addresses", address);
+
+    // Update school with new address
+    await ctx.db.patch(schoolId, {
+      address: addressId,
     });
 
     return { success: true };

@@ -29,9 +29,7 @@ export function StudentsTable({ students }: StudentsTableProps) {
     const indexOfLastStudent = page * studentsPerPage
     const indexOfFirstStudent = indexOfLastStudent - studentsPerPage
     const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent)
-
-
-    console.log("this is the students", students)
+    
     return (
         <div className="bg-white rounded-lg border shadow-sm">
             <Table>

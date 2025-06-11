@@ -4,9 +4,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import { checkAdmin } from "./helpers";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const setClassFeeStructure = mutation({
   args: {
@@ -27,7 +29,7 @@ export const setClassFeeStructure = mutation({
           v.object({
             minimumFirstPayment: v.number(),
             maximumInstallments: v.number(),
-            installmentDueDates: v.array(v.string()),
+            installmentDueDates: v.optional(v.array(v.string())),
           }),
         ),
         reminderDays: v.array(v.number()),
@@ -35,6 +37,7 @@ export const setClassFeeStructure = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await checkAdmin(ctx);
     // Check if fee structure exists
     const existing = await ctx.db
       .query("classFeeStructure")
@@ -68,6 +71,43 @@ export const setClassFeeStructure = mutation({
       // Create initial outstanding payments
       await createOutstandingPayments(ctx, args);
     }
+  },
+});
+
+// function to create outstanding payment for just one student of a class
+export const createOutstandingPaymentForStudent = mutation({
+  args: {
+    schoolId: v.id("schools"),
+    studentId: v.id("users"),
+    classId: v.id("classes"),
+    academicYear: v.string(),
+    termId: v.number(),
+    feeId: v.string(),
+    feeName: v.string(),
+    amount: v.number(),
+    dueDate: v.string(),
+    isCompulsory: v.boolean(),
+    remainingAmount: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // CHECK IF THE REQUESTING USER IS AN ADMIN
+    await checkAdmin(ctx);
+
+    await ctx.db.insert("outstandingPayments", {
+      schoolId: args.schoolId,
+      studentId: args.studentId,
+      classId: args.classId,
+      academicYear: args.academicYear,
+      termId: args.termId,
+      feeId: args.feeId,
+      feeName: args.feeName,
+      amountPaid: 0,
+      remainingAmount: args?.remainingAmount ?? args.amount,
+      amount: args.amount,
+      dueDate: args.dueDate,
+      isCompulsory: args.isCompulsory,
+      status: "unpaid",
+    });
   },
 });
 
@@ -107,6 +147,8 @@ async function createOutstandingPayments(
         termId: args.termId,
         feeId: fee.id,
         feeName: fee.name,
+        amountPaid: 0,
+        remainingAmount: fee.amount,
         amount: fee.amount,
         dueDate: fee.dueDate,
         isCompulsory: fee.isCompulsory,
@@ -115,6 +157,64 @@ async function createOutstandingPayments(
     }
   }
 }
+
+
+
+// *UPDATE OUTSTANDING PAYMENT FOR THE STUDENT BY THE OUTSTANDING PAYMENT ID
+export const updateOutstandingPaymentById = mutation({
+  args: {
+    outstandingId: v.id("outstandingPayments"),
+    remainingAmount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // CHECK IF THE REQUESTING USER IS AN ADMIN
+    await checkAdmin(ctx);
+
+    //EDIT THE EXISTING AMOUNT OF THE OUTSTANDING PAYMENT
+    await ctx.db.patch(args.outstandingId, {
+      remainingAmount: args.remainingAmount,
+    });
+
+    return { success: true };
+  },
+});
+
+//  * FUNCTION TO DELETE AN OUTSTANDING PAYMENT BY THE OUTSTANDING PAYMENT ID
+export const deleteOutstandingPaymentById = mutation({
+  args: {
+    outstandingId: v.id("outstandingPayments"),
+  },
+  handler: async (ctx, args) => {
+    // CHECK IF THE REQUESTING USER IS AN ADMIN
+    await checkAdmin(ctx);
+
+    // GET THE USERID OF THE ADMIN
+    const userId = await getAuthUserId(ctx); // Ensure the user is authenticated
+
+    if (!userId) {
+      throw new ConvexError("User does not exist");
+    }
+
+    const user = await ctx.db.get(userId);
+
+    // GET THE OUTSTANDING PAYMENT
+    const outstandingPayment = await ctx.db.get(args.outstandingId);
+
+    if (!outstandingPayment) {
+      throw new ConvexError("outstanding payment not found");
+    }
+
+    // CHECK IF THE OUTSTANDING PAYMENT SCHOOLID IS THE SAME WITH THE ADMIN MAKING THE REQUEST
+    if (outstandingPayment.schoolId !== user?.schoolId) {
+      throw new ConvexError("Outstanding payment do not belong to the school");
+    }
+
+    // SEND DELETE REQUEST
+    await ctx.db.delete(args.outstandingId);
+
+    return { success: true };
+  },
+});
 
 async function updateOutstandingPayments(
   ctx: any,

@@ -24,6 +24,12 @@ export const mockNavItems = [
     roles: ["ADMIN", "TEACHER", "STUDENT"],
   },
   {
+    title: "Classrooms",
+    href: "/classroom",
+    icon: "BookOpen",
+    roles: ["TEACHER", "STUDENT"],
+  },
+  {
     title: "Students",
     href: "/students",
     icon: "GraduationCap",
@@ -42,16 +48,22 @@ export const mockNavItems = [
     roles: ["ADMIN"],
   },
   {
-    title : "Grades",
-    href : "/grades",
-    icon: "IdCardIcon",
-    roles : ["STUDENT"]
+    title: "Grading",
+    href: "/grading",
+    icon: "School",
+    roles: ["ADMIN"],
   },
   {
-    title : "Blog",
-    href : "/blog",
+    title: "Grades",
+    href: "/grades",
     icon: "IdCardIcon",
-    roles : ["STUDENT"]
+    roles: ["STUDENT"],
+  },
+  {
+    title: "Blog",
+    href: "/blog",
+    icon: "IdCardIcon",
+    roles: ["STUDENT", "TEACHER"],
   },
   {
     title: "Attendance",
@@ -69,7 +81,7 @@ export const mockNavItems = [
     title: "Learn",
     href: "/learn",
     icon: "BookAIcon",
-    roles: ["STUDENT"],
+    roles: ["STUDENT", "TEACHER"],
   },
   {
     title: "Messages",
@@ -84,10 +96,10 @@ export const mockNavItems = [
     roles: ["ADMIN"],
   },
   {
-    title : "Marketing",
-    href : "/marketing",
+    title: "Marketing",
+    href: "/marketing",
     icon: "IdCardIcon",
-    roles : ["ADMIN"]
+    roles: ["ADMIN"],
   },
   {
     title: "Settings",

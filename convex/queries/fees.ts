@@ -31,6 +31,34 @@ export const getOutstandingPayment = internalQuery({
   },
 });
 
+// *GET THE OUTSTANDING PAYMENT OF A STUDENT BY THEIR CLASS, TERM , ACADEMIC YEAR AND FEE ID
+export const getOutstandingPaymentsForStudent = query({
+  args: {
+    studentId: v.id("users"),
+    classId: v.id("classes"),
+    academicYear: v.string(),
+    termId: v.number(),
+    feeId: v.string(),
+    feeName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Use the by_student index for efficient lookup by studentId
+    const query = ctx.db
+      .query("outstandingPayments")
+      .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("classId"), args.classId),
+          q.eq(q.field("academicYear"), args.academicYear),
+          q.eq(q.field("termId"), args.termId),
+          q.eq(q.field("feeId"), args.feeId),
+          q.eq(q.field("feeName"), args.feeName),
+        ),
+      );
+    return await query.first();
+  },
+});
+
 export const getOutstandingPayments = query({
   args: {
     schoolId: v.id("schools"),

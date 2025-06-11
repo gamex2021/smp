@@ -12,7 +12,12 @@ export const getCurrentTerm = query({
       .filter((q) => q.eq(q.field("isActive"), true))
       .first();
 
-    return { id: config?._id, ...(config?.currentTerm ?? null) };
+    return {
+      id: config?._id,
+      year: config?.academicYear,
+      terms: config?.terms ?? [],
+      ...(config?.currentTerm ?? null),
+    };
   },
 });
 
@@ -39,5 +44,67 @@ export const getAcademicConfig = query({
   },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.configId);
+  },
+});
+
+export const getAllAcademicYears = query({
+  args: {
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const academicYears = await ctx.db
+      .query("academicConfig")
+      .withIndex("by_school", (q) => q.eq("schoolId", args.schoolId))
+      .collect();
+
+    return academicYears;
+  },
+});
+
+export const getActiveAcademicYear = query({
+  args: {
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const activeYear = await ctx.db
+      .query("academicConfig")
+      .withIndex("active_years", (q) =>
+        q.eq("schoolId", args.schoolId).eq("isActive", true),
+      )
+      .first();
+
+    return activeYear;
+  },
+});
+
+export const getAcademicYearsByStatus = query({
+  args: {
+    schoolId: v.id("schools"),
+    status: v.union(
+      v.literal("upcoming"),
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("archived"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const years = await ctx.db
+      .query("academicConfig")
+      .withIndex("by_school_and_status", (q) =>
+        q.eq("schoolId", args.schoolId).eq("status", args.status),
+      )
+      .collect();
+
+    return years;
+  },
+});
+
+export const getAcademicYearById = query({
+  args: {
+    academicYearId: v.id("academicConfig"),
+  },
+  handler: async (ctx, args) => {
+    const year = await ctx.db.get(args.academicYearId);
+    return year;
   },
 });
